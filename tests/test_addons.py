@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.1.1", "cautest": "0.1.2", "xspm": "0.1.0"}[tool]
+            version = {"xdtc": "0.1.1", "cautest": "0.1.3", "xspm": "0.1.0"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -222,6 +222,40 @@ ctest.native {id="unit.addon",target="test.addon"}
         selected.write_text("this is invalid Lua !!!\n")
         broken = self.run_tool("ctest", f"--config={selected}", "--list", expected=3)
         self.assertNotIn("invalid task", broken.stdout + broken.stderr)
+
+    def test_054_ctest_run_collector_after_failure(self):
+        project = self.base / "collector 中文 with spaces"
+        project.mkdir()
+        (project / "xmake.lua").write_text('target("product")\n    set_kind("phony")\n')
+        config = project / "ctest.lua"
+        self.write_ctest(config, value=41)
+        config.write_text(config.read_text() + '''
+ctest.project {collectors = {{
+    id = "summary", provider = {module = "collect.mjs", export = "create"}
+}}}
+''')
+        (project / "collect.mjs").write_text('''import {writeFile} from "node:fs/promises";
+import {join} from "node:path";
+export function create() {
+    return async ({run, resultDir}) => {
+        await writeFile(join(resultDir, "merged.json"), JSON.stringify({
+            runId: run.id, status: run.status, jobs: run.jobs.length
+        }));
+    };
+}
+''')
+        jobs = json.loads(self.exec(["xmake", "ctest", "--list", "--json"], cwd=project).stdout)
+        self.assertEqual(len(jobs), 1)
+        self.exec(["xmake", "ctest", "--plan", "--json"], cwd=project)
+        self.assertFalse((project / ".cautest/results").exists())
+        summary = json.loads(self.exec(["xmake", "ctest", "--json", "--reporter=json,junit"],
+                                       cwd=project, expected=1).stdout)
+        result = Path(summary["resultPath"])
+        report = json.loads(result.read_text())
+        merged = json.loads((result.parent / "merged.json").read_text())
+        self.assertEqual(report["status"], "FAIL")
+        self.assertEqual(report["collectors"][0]["status"], "SUCCESS")
+        self.assertEqual(merged, {"runId": report["id"], "status": "FAIL", "jobs": 1})
 
     def test_055_ctest_cached_symlink_project(self):
         physical = self.base / "physical project"

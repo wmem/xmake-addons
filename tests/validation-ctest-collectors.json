@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-05",
+  "status": "PASS",
+  "distributionVersion": "0.1.3",
+  "toolVersion": "0.5.0",
+  "sourceCommit": "6f2fdaa16d8f2ca04675ea52d4ccfa14c6a3f5a3",
+  "tests": 13,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "13 项完整插件回归：真实配方安装、命令、失败重试和卸载",
+    "安装后的 Run Collector 在 Native Case FAIL 后收集本轮结果且保留 FAIL 退出码",
+    "含空格和中文路径；list / plan 不执行收集或生成 Run 目录",
+    "cautest 源码默认测试 172 项与真实 Xmake 测试 37 项通过"
+  ],
+  "evidence": {
+    "regressions": "/tmp/addon-013-verification-20261005",
+    "regressionLog": "/tmp/addon-013-tests.log",
+    "sourceDefaultLog": "/tmp/cautest-unified-default.log",
+    "sourceXmakeLog": "/tmp/cautest-unified-xmake.log"
+  },
+  "limitations": [
+    "隔离安装消费当前已提交源码快照，仅替换配方提交号以指向本地测试 Git 仓库",
+    "实际远程升级和 cmlib 验证结果在 cmlib/test/VERIFICATION.md 维护",
+    "未访问 MCU 板卡或修改用户全局配置"
+  ]
+}

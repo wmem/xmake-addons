@@ -62,6 +62,11 @@ Cautest `0.1.2` 配方固定源码 `9678893`（工具内部版本 0.4.0）。
 12 项插件回归通过，包含该场景；真实固定提交的配方安装及 Native Case 在隔离目录通过。
 版本和范围见 [ctest 增量接入验证](tests/validation-ctest-incremental.json)。
 
+Cautest `0.1.3` 配方固定源码 `6f2fdaa`（工具内部版本 0.5.0），增加 Run Collector，
+支持在所有选中 Job 结束后统一收集产物；用例失败时仍执行，收集失败进入报告并返回错误码。
+13 项插件回归通过，包含真实配方安装后的 FAIL 运行收集，以及 list / plan 不执行收集。
+版本和范围见 [ctest 收集器接入验证](tests/validation-ctest-collectors.json)。
+
 工具源码和新索引推送后，消费工程执行 `xmake addon --upgrade`，由 Xmake 更新已安装插件及
 `xmake-addons.lock`。cmlib 根工程和 `test/` 子工程有各自的锁，都需要升级；
 只修改工具源码不会改变已经安装的命令，`cautest 0.1.x` 声明本身无需改变。
