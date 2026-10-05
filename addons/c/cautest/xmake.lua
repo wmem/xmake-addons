@@ -6,6 +6,7 @@ set_description("cautest 的 Xmake 命令插件")
 add_urls("https://github.com/wmem/cautest.git")
 add_versions("0.1.0", "b7046d765846909efb3e63759e109a5ebc61b8bc")
 add_versions("0.1.1", "3c74b6253d3153d845a9772fa4d36ba249ac7d04")
+add_versions("0.1.2", "967889387a72e36f2e79fcd83dd2d9e378dbb000")
 on_load(function(package)
 	-- 本地开发仍按配方的提交号检出，不消费未提交修改。
 	local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")

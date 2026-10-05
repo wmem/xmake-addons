@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-05",
+  "status": "PASS",
+  "distributionVersion": "0.1.2",
+  "toolVersion": "0.4.0",
+  "sourceCommit": "967889387a72e36f2e79fcd83dd2d9e378dbb000",
+  "tests": 12,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "配置序列化文本变化不阻止 CTP Case；Artifact Receipt v2 无 configDigest",
+    "12 项完整插件回归：源码快照、真实安装流程、命令、失败重试和卸载",
+    "另以真实工具仓库固定提交 9678893 通过配方冷安装和 Native Case"
+  ],
+  "evidence": {
+    "regressions": "/tmp/addon-012-verification-20261005",
+    "pinnedInstallLog": "/tmp/cautest-012-pinned-install.log",
+    "pinnedNativeResult": "/share/project/common/mcu/code/c-cmlib/build/ctest-addon-012/consumer/.cautest/results/20261005074223267-796edc23/result.json"
+  },
+  "limitations": [
+    "这是发布前的隔离验证，不代替用户安装环境的测试",
+    "用户插件升级及 cmlib 全量结果在 cmlib/test/VERIFICATION.md 维护"
+  ]
+}

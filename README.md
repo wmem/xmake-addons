@@ -55,3 +55,13 @@ ADDON_TEST_EVIDENCE=/tmp/addon-test-evidence \
 Cautest `0.1.1` 修复符号链接工程路径与实际编译目录混用的问题。11 项插件回归通过，
 包含先通过符号链接保存配置，再从实际目录执行 Native 测试且保持 debug 模式的场景。
 版本和范围见 [ctest 路径修复验证](tests/validation-ctest-path.json)。
+
+Cautest `0.1.2` 配方固定源码 `9678893`（工具内部版本 0.4.0）。
+它移除配置文件原文摘要，按实际工程、模式、平台、架构和构建目录校验上下文，
+解决配置值未变化、仅配置文本重写时误报 `Xmake configuration changed during this run` 的问题。
+12 项插件回归通过，包含该场景；真实固定提交的配方安装及 Native Case 在隔离目录通过。
+版本和范围见 [ctest 增量接入验证](tests/validation-ctest-incremental.json)。
+
+工具源码和新索引推送后，消费工程执行 `xmake addon --upgrade`，由 Xmake 更新已安装插件及
+`xmake-addons.lock`。cmlib 根工程和 `test/` 子工程有各自的锁，都需要升级；
+只修改工具源码不会改变已经安装的命令，`cautest 0.1.x` 声明本身无需改变。

@@ -22,7 +22,7 @@ class AddonTests(unittest.TestCase):
         cls.addClassCleanup(cls.finish)
         cls.env = dict(os.environ, XMAKE_GLOBALDIR=str(cls.base / "global"),
                        XMAKE_COLORTERM="n", npm_config_offline="true",
-                       npm_config_audit="false", npm_config_fund="false")
+                       npm_config_audit="false", npm_config_fund="false", XMAKE_STATS="false")
         # 外部会话的 RC 和工程选择不能污染隔离测试。
         for key in ("XMAKE_RCFILES", "XMAKE_PROJECT_DIR", "CAUTEST_XMAKE_CONFIG",
                     "CAUTEST_ADDON_ENTRY", "XMAKE_PKG_INSTALLDIR"):
@@ -38,8 +38,8 @@ class AddonTests(unittest.TestCase):
             source = cls.base / "sources" / tool
             source.mkdir(parents=True)
             for name in sorted(set(files)):
-                if name and (root / name).is_file() and not any(
-                    part in {".git", ".xmake", "build", "dist", "node_modules"}
+                if name and (root / name).is_file() and Path(name).parts[0] != "build" and not any(
+                    part in {".git", ".xmake", "dist", "node_modules"}
                     for part in Path(name).parts
                 ):
                     target = source / name
@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = "0.1.1" if tool in {"xdtc", "cautest"} else "0.1.0"
+            version = {"xdtc": "0.1.1", "cautest": "0.1.2", "xspm": "0.1.0"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -241,6 +241,27 @@ ctest.native {id="unit.addon",target="test.addon"}
         self.assertEqual(report["jobs"][0]["groups"][0]["cases"][0]["status"], "PASS")
         artifact = next(item for item in report["jobs"][0]["artifacts"] if item["kind"] == "build-artifact")
         self.assertEqual(artifact["metadata"]["receipt"]["context"]["mode"], "debug")
+
+    def test_056_ctest_config_serialization_does_not_block_cases(self):
+        project = self.base / "config serialization"
+        project.mkdir()
+        (project / "xmake.lua").write_text('target("product")\n    set_kind("phony")\n')
+        config = project / "ctest.lua"
+        self.write_ctest(config)
+        config.write_text(config.read_text().replace('    add_rules("cautest.native")', '''    add_rules("cautest.native")
+    after_build(function ()
+        import("core.project.config")
+        local file = config.filepath()
+        io.writefile(file, io.readfile(file) .. "\\n-- 配置值不变，仅序列化文本变化\\n")
+    end)'''))
+        self.exec(["xmake", "f", "-y", "-m", "debug"], cwd=project)
+        summary = json.loads(self.exec(["xmake", "ctest", "--json"], cwd=project).stdout)
+        report = json.loads(Path(summary["resultPath"]).read_text())
+        self.assertEqual(report["status"], "SUCCESS")
+        self.assertEqual(report["jobs"][0]["groups"][0]["cases"][0]["status"], "PASS")
+        artifact = next(item for item in report["jobs"][0]["artifacts"] if item["kind"] == "build-artifact")
+        self.assertEqual(artifact["metadata"]["receipt"]["schemaVersion"], 2)
+        self.assertNotIn("configDigest", artifact["metadata"]["receipt"]["context"])
 
     def test_06_ctest_invalid_default_does_not_break_other_commands(self):
         (self.project / "ctest.lua").write_text("this is invalid Lua !!!\n")
