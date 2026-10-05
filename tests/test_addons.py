@@ -52,8 +52,8 @@ class AddonTests(unittest.TestCase):
             commit = cls.exec(["git", "rev-parse", "HEAD"], cwd=source).stdout.strip()
             recipe = INDEX / "addons" / tool[0] / tool / "xmake.lua"
             text = recipe.read_text()
-            text = re.sub(r'add_versions\("0.1.0", "[^"\n]+"\)',
-                          f'add_versions("0.1.0", "{commit}")', text)
+            text = re.sub(r'add_versions\("(0\.1\.[0-9]+)", "[^"\n]+"\)',
+                          lambda m: f'add_versions("{m[1]}", "{commit}")', text)
             dest = repo / "addons" / tool[0] / tool / "xmake.lua"
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(text)
@@ -65,13 +65,17 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            runtime = cls.base / "global/.xmake/addons" / tool / "0.1.0/plugins" / command / "runtime"
+            version = "0.1.1" if tool == "xdtc" else "0.1.0"
+            runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
         cls.project = cls.base / "consumer with spaces"
         cls.project.mkdir()
         (cls.project / "xmake.lua").write_text('target("product")\n    set_kind("phony")\n')
         cls.exec(["git", "init", "-q"], cwd=cls.base / "repo")
+        cls.exec(["git", "add", "."], cwd=cls.base / "repo")
+        cls.exec(["git", "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid",
+                  "commit", "-qm", "index snapshot"], cwd=cls.base / "repo")
         cls.remote = cls.base / "library"
         cls.remote.mkdir()
         cls.exec(["git", "init", "-q", "-b", "main"], cwd=cls.remote)
@@ -135,6 +139,33 @@ class AddonTests(unittest.TestCase):
         self.assertTrue((self.project / "selected.c").is_file())
         self.run_tool("xdtc", f"--config={selected}")
         self.run_tool("xdtc", "--config=missing.lua", expected=None)
+
+    def test_025_codegen_rule_and_public_module(self):
+        consumer = self.base / "codegen consumer"
+        consumer.mkdir()
+        (consumer / "xmake.lua").write_text("""target("generated")
+    set_kind("phony")
+    add_rules("@addon/xdtc/codegen")
+    on_run(function()
+        local generator = import("@addon.xdtc.generator")
+        assert(generator.version() == "0.5.0")
+    end)
+""")
+        (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')
+        (consumer / "value.tpl").write_text('int value = {{ value }};\n')
+        (consumer / "xdtc.lua").write_text('return {data="data.lua",tpl={{files={"value.tpl"},out="generated.c"}}}\n')
+        self.exec(["xmake", "build", "-y"], cwd=consumer)
+        output = consumer / "generated.c"
+        self.assertEqual(output.read_text(), "int value = 42;")
+        before = output.stat().st_mtime_ns
+        self.exec(["xmake", "build", "-y"], cwd=consumer)
+        self.assertEqual(output.stat().st_mtime_ns, before)
+        output.unlink()
+        self.exec(["xmake", "build", "-y"], cwd=consumer)
+        self.assertTrue(output.is_file())
+        self.exec(["xmake", "run", "generated"], cwd=consumer)
+        (consumer / "data.lua").write_text("invalid Lua !!!")
+        self.exec(["xmake", "build", "-y"], cwd=consumer, expected=None)
 
     def test_03_xspm_default_and_selected_root(self):
         manifest = {"version": 1, "dependencies": {"library": str(self.remote) + "#main"}}

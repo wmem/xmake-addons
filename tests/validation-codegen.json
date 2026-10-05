@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-05",
+  "environment": {
+    "platform": "Linux x86_64",
+    "xmake": "3.1.1+HEAD.3ba37a0",
+    "node": "24.15.0"
+  },
+  "status": "PASS",
+  "tests": 10,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "sourceCommits": {
+    "xdtc": "e8b6c1b605054246e173a2b67b511fdd301efb06",
+    "xspm": "020a9231c3eb6f5b5adec2895f0375ecc44eaaba",
+    "cautest": "b7046d765846909efb3e63759e109a5ebc61b8bc"
+  },
+  "testScriptSha256": "9825e7b78950df7f34b4fa6e6c27fcf9eba32161bd07a8355af81b128b44a822",
+  "scope": [
+    "真实配方安装与三个命令",
+    "xdtc 命名空间规则和公共生成 API",
+    "增量写入、缺失文件恢复和生成失败传播",
+    "Git 源码包同步",
+    "Native C 测试与退出码",
+    "TS 准备失败重试、RC 保留与卸载"
+  ],
+  "limitations": [
+    "使用当前源码快照的本地 Git 源，版本声明保持真实配方",
+    "隔离 XMAKE_GLOBALDIR，不修改用户全局插件目录",
+    "此记录不表示远程发布或 MCU 验证"
+  ]
+}
