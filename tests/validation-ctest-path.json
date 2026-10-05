@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-05",
+  "status": "PASS",
+  "tests": 11,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "environment": {
+    "platform": "Linux x86_64",
+    "xmake": "3.1.1+HEAD.3ba37a0",
+    "node": "24.15.0"
+  },
+  "sourceCommits": {
+    "cautest": "3c74b6253d3153d845a9772fa4d36ba249ac7d04",
+    "xdtc": "e8b6c1b605054246e173a2b67b511fdd301efb06",
+    "xspm": "020a9231c3eb6f5b5adec2895f0375ecc44eaaba"
+  },
+  "testScriptSha256": "2d409f16089d7ad4def361bdb67b4b7395c4edf3d535f7002af76b50f1e8ca6c",
+  "scope": [
+    "索引安装、命令与配置选择、Native 测试及退出码",
+    "符号链接缓存工程路径的 Native 编译运行及模式保留",
+    "原有 RC 保留、TS 准备失败重试、增量生成、卸载"
+  ],
+  "limitations": [
+    "使用源码快照的本地 Git 源及隔离 XMAKE_GLOBALDIR",
+    "此记录不代替消费工程默认插件目录下的全量测试"
+  ]
+}

@@ -51,3 +51,7 @@ ADDON_TEST_EVIDENCE=/tmp/addon-test-evidence \
 
 2026-10-05 补充 xdtc `0.1.1` 的规则与模块后，10 项插件集成测试通过，无失败或跳过。
 版本与范围见 [代码生成接入验证](tests/validation-codegen.json)。
+
+Cautest `0.1.1` 修复符号链接工程路径与实际编译目录混用的问题。11 项插件回归通过，
+包含先通过符号链接保存配置，再从实际目录执行 Native 测试且保持 debug 模式的场景。
+版本和范围见 [ctest 路径修复验证](tests/validation-ctest-path.json)。

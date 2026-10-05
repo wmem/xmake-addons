@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = "0.1.1" if tool == "xdtc" else "0.1.0"
+            version = "0.1.1" if tool in {"xdtc", "cautest"} else "0.1.0"
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -222,6 +222,25 @@ ctest.native {id="unit.addon",target="test.addon"}
         selected.write_text("this is invalid Lua !!!\n")
         broken = self.run_tool("ctest", f"--config={selected}", "--list", expected=3)
         self.assertNotIn("invalid task", broken.stdout + broken.stderr)
+
+    def test_055_ctest_cached_symlink_project(self):
+        physical = self.base / "physical project"
+        physical.mkdir()
+        (physical / "xmake.lua").write_text('target("product")\n    set_kind("phony")\n')
+        self.write_ctest(physical / "ctest.lua")
+        alias = self.base / "aliases" / "nested" / "project"
+        alias.parent.mkdir(parents=True)
+        alias.symlink_to(physical, target_is_directory=True)
+        # 先通过别名保存工程配置，再从实际目录调用，复现两个路径表示混用。
+        self.exec(["xmake", "f", "-P", str(alias), "-y", "-m", "debug"], cwd=physical)
+        summary = json.loads(self.exec(
+            ["xmake", "ctest", "--json", "--reporter=json"], cwd=physical
+        ).stdout)
+        report = json.loads(Path(summary["resultPath"]).read_text())
+        self.assertEqual(report["status"], "SUCCESS")
+        self.assertEqual(report["jobs"][0]["groups"][0]["cases"][0]["status"], "PASS")
+        artifact = next(item for item in report["jobs"][0]["artifacts"] if item["kind"] == "build-artifact")
+        self.assertEqual(artifact["metadata"]["receipt"]["context"]["mode"], "debug")
 
     def test_06_ctest_invalid_default_does_not_break_other_commands(self):
         (self.project / "ctest.lua").write_text("this is invalid Lua !!!\n")
