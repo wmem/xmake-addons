@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-05",
+  "environment": {
+    "os": "Linux x86_64",
+    "xmake": "3.1.1+HEAD.3ba37a0",
+    "node": "v24.15.0"
+  },
+  "addonVersion": "0.1.0",
+  "sourceCommits": {
+    "xdtc": "b24b54f4b708ee61b85634df1215909a15d43d5e",
+    "xspm": "020a9231c3eb6f5b5adec2895f0375ecc44eaaba",
+    "cautest": "b7046d765846909efb3e63759e109a5ebc61b8bc"
+  },
+  "checks": {
+    "integration": {
+      "status": "PASS",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "legacy": {
+      "xdtc": {
+        "suites": 6,
+        "tests": 35,
+        "status": "PASS"
+      },
+      "xspm": {
+        "status": "PASS",
+        "entry": "tests/run.sh"
+      },
+      "cautest": {
+        "tests": 15,
+        "skipped": 0,
+        "status": "PASS"
+      }
+    },
+    "actualIndexInstall": "PASS",
+    "actualInstalledCommands": "PASS",
+    "actualNativeTest": {
+      "runId": "20261005051859516-7c8ba5ab",
+      "status": "SUCCESS"
+    }
+  },
+  "testScriptSha256": "5d0499cd9b9e222f0d63626734839e08dd6cedcde4853a6f9f7c3daeebc54e84",
+  "scope": {
+    "globalUserPluginsModified": false,
+    "remotePublished": false,
+    "hardwareAccessed": false,
+    "templateModified": false
+  }
+}

@@ -1,0 +1,25 @@
+-- 分发版本对应工具源码提交；安装逻辑由工具仓库维护。
+package("cautest")
+set_kind("addon")
+set_homepage("https://github.com/wmem/cautest")
+set_description("cautest 的 Xmake 命令插件")
+add_urls("https://github.com/wmem/cautest.git")
+add_versions("0.1.0", "b7046d765846909efb3e63759e109a5ebc61b8bc")
+on_load(function(package)
+    -- 本地开发仍按配方的提交号检出，不消费未提交修改。
+    local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
+    if root then
+        local gitdir = path.join(path.absolute(root), "cautest", ".git")
+        assert(os.isdir(gitdir), "本地工具 Git 仓库不存在：" .. gitdir)
+        package:set("urls", "file://" .. path.unix(gitdir))
+    end
+end)
+on_install(function(package)
+    import("prepare-addon", { rootdir = path.join(os.curdir(), "scripts"), anonymous = true }).install(
+        package
+    )
+end)
+on_test(function(package)
+    assert(os.isfile(package:installdir("plugins/ctest/main.lua")), "缺少插件命令入口")
+end)
+package_end()
