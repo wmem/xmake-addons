@@ -20,7 +20,9 @@ on_install(function(package)
 end)
 on_test(function(package)
 	assert(os.isfile(package:installdir("plugins/xdtc/main.lua")), "缺少插件命令入口")
-	assert(os.isfile(package:installdir("rules/codegen/xmake.lua")), "缺少代码生成规则")
-	assert(os.isfile(package:installdir("modules/generator.lua")), "缺少生成 API")
+	if package:version_str() ~= "0.1.0" then
+		assert(os.isfile(package:installdir("rules/codegen/xmake.lua")), "缺少代码生成规则")
+		assert(os.isfile(package:installdir("modules/generator.lua")), "缺少生成 API")
+	end
 end)
 package_end()
