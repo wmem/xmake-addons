@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-06",
+  "status": "PASS",
+  "distributionVersion": "0.2.1",
+  "toolVersion": "0.8.0",
+  "sourceCommit": "afaf17d1ceedf4b3b4ec9f3ea44b3fa56d946873",
+  "tests": 16,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "源码 58 项回归",
+    "实际配方安装的 16 项插件集成回归",
+    "配置引用返回函数，使用方绑定脚本环境并调用",
+    "路径选择、函数组装、目录解析、数据改组与错误拒绝",
+    "保留 gen/data/run/action 的原有行为"
+  ],
+  "evidence": {
+    "regressionLog": "/share/project/common/mcu/code/gd32-template/build/config-reference/addons.log",
+    "sourceLog": "/share/project/common/mcu/code/gd32-template/build/config-reference/source.log"
+  }
+}

@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.2.0", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.2.1", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -148,7 +148,7 @@ class AddonTests(unittest.TestCase):
     add_rules("@addon/xdtc/codegen")
     on_run(function()
         local generator = import("@addon.xdtc.generator")
-        assert(generator.version() == "0.7.0")
+        assert(generator.version() == "0.8.0")
     end)
 """)
         (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')
@@ -240,6 +240,54 @@ end
             result = self.exec(["xmake", "xdtc", "console", "should-not-run.txt"], cwd=consumer, expected=None)
             self.assertIn(message, result.stdout + result.stderr)
             self.assertFalse((consumer / "should-not-run.txt").exists())
+
+    def test_028_xdtc_config_reference_returns_callable_reader(self):
+        consumer = self.base / "config reference 中文"
+        application = consumer / "app with spaces"
+        application.mkdir(parents=True)
+        (consumer / "xmake.lua").write_text('includes("app with spaces/xmake.lua")')
+        (application / "xdtc.lua").write_text('return {data="board.lua"}')
+        data = application / "board.lua"
+        data.write_text('return {hardware={mcu={chip="fixture"}},debug={frequency=100000}}')
+        (application / "xmake.lua").write_text('''
+includes("@addon/xdtc/config")
+local board = xdtc_config("xdtc.lua")
+local read = board:select(function(root)
+    return {chip=root.hardware.mcu.chip, frequency=root.debug.frequency}
+end)
+rule("consumer")
+    on_load(function(target)
+        local getter = target:extraconf("rules", "consumer", "config")
+        assert(type(getter) == "function", "select 必须返回函数")
+        local sandbox = import("core.sandbox.sandbox")
+        local callback = sandbox.fork(getter):script()
+        local selected, base = callback()
+        assert(selected.chip == "fixture" and selected.frequency == 100000)
+        assert(base == path.join(os.projectdir(), "app with spaces"))
+        io.writefile(path.join(os.projectdir(), "selected.txt"), selected.chip)
+    end)
+rule_end()
+target("consumer")
+    set_kind("phony")
+    add_rules("consumer", {config=read})
+target_end()
+''')
+        self.exec(["xmake", "f", "-y"], cwd=consumer)
+        self.assertEqual((consumer / "selected.txt").read_text(), "fixture")
+        script = application / "xmake.lua"
+        text = script.read_text()
+        # 只有选择器变化；使用方仍按原来的字段约定读取。
+        data.write_text('return {soc={processor={chip="fixture"}},debug={frequency=100000}}')
+        script.write_text(text.replace("root.hardware.mcu", "root.soc.processor"))
+        self.exec(["xmake", "f", "-y"], cwd=consumer)
+        self.assertEqual((consumer / "selected.txt").read_text(), "fixture")
+        script.write_text(script.read_text().replace(
+            'return {chip=root.soc.processor.chip, frequency=root.debug.frequency}', 'return nil'))
+        (consumer / "selected.txt").unlink()
+        result = self.exec(["xmake", "f", "-y"], cwd=consumer, expected=None)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("select must return an object", result.stdout + result.stderr)
+        self.assertFalse((consumer / "selected.txt").exists())
 
     def test_03_xspm_default_and_selected_root(self):
         manifest = {"version": 1, "package": "addon-consumer",

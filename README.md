@@ -88,3 +88,5 @@ select 支持 `"."`、点分对象路径和 Lua 函数；旧字符串声明需�
 gen/data/run 的数据语义保持不变，公开 select_action 供应用读取器复用筛选。
 源码 51 项与隔离真实配方安装 15 项回归通过，见
 [输入筛选验证](tests/validation-xdtc-select.json)。
+
+xdtc `0.2.1` 固定源码 `afaf17d`（工具 v0.8.0），新增 `includes("@addon/xdtc/config")` 与 `xdtc_config(file):select(selector)`。select 返回读取函数，由使用方在脚本环境中显式调用后取得 table；支持对象路径和函数组装，不改变现有 action 或生成入口。源码 58 项、隔离真实配方安装 16 项回归通过，见 [配置引用验证](tests/validation-xdtc-config.json)。
