@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-06",
+  "status": "PASS",
+  "distributionVersion": "0.2.0",
+  "toolVersion": "0.7.0",
+  "sourceCommit": "00f1f8c2d1f1a5e9c17b26d8ccc0f08b5575ece6",
+  "tests": 15,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "源码 51 项回归",
+    "实际配方安装的 15 项插件集成回归",
+    "root、子对象、嵌套对象和函数组装，参数转发",
+    "树改组后脚本不变；缺少 select、缺失路径、标量和函数异常非零退出",
+    "数据副本隔离，gen/data/run 保持原语义"
+  ],
+  "evidence": {
+    "regressionLog": "/share/project/common/mcu/code/gd32-template/build/config-entry/select-addons.log",
+    "sourceLog": "/share/project/common/mcu/code/gd32-template/build/config-entry/select-source.log"
+  }
+}

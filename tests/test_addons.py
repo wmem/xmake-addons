@@ -52,7 +52,7 @@ class AddonTests(unittest.TestCase):
             commit = cls.exec(["git", "rev-parse", "HEAD"], cwd=source).stdout.strip()
             recipe = INDEX / "addons" / tool[0] / tool / "xmake.lua"
             text = recipe.read_text()
-            text = re.sub(r'add_versions\("(0\.1\.[0-9]+)", "[^"\n]+"\)',
+            text = re.sub(r'add_versions\("(0\.[0-9]+\.[0-9]+)", "[^"\n]+"\)',
                           lambda m: f'add_versions("{m[1]}", "{commit}")', text)
             dest = repo / "addons" / tool[0] / tool / "xmake.lua"
             dest.parent.mkdir(parents=True, exist_ok=True)
@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.1.2", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.2.0", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -148,7 +148,7 @@ class AddonTests(unittest.TestCase):
     add_rules("@addon/xdtc/codegen")
     on_run(function()
         local generator = import("@addon.xdtc.generator")
-        assert(generator.version() == "0.6.0")
+        assert(generator.version() == "0.7.0")
     end)
 """)
         (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')
@@ -182,7 +182,7 @@ class AddonTests(unittest.TestCase):
 end
 ''')
         (nested / "value.tpl").write_text('value={{root.number}}')
-        (nested / "xdtc.lua").write_text('return {data="data.lua",tpl={{files={"value.tpl"},out="generated.txt"}},actions={inspect="action.lua"}}')
+        (nested / "xdtc.lua").write_text('return {data="data.lua",tpl={{files={"value.tpl"},out="generated.txt"}},actions={inspect={script="action.lua",select="."}}}')
         (consumer / "xdtc.lua").write_text('local xdtc=import("@addon.xdtc.generator")\nreturn xdtc.load_config(path.join(os.scriptdir(),"配置 空格/xdtc.lua"))')
         expanded = self.exec(["xmake", "xdtc", "data"], cwd=consumer).stdout
         self.assertTrue(expanded.startswith("return "), expanded)
@@ -209,6 +209,37 @@ end
         self.assertIn("fixture action failure", failure.stdout + failure.stderr)
         (nested / "reserved.lua").write_text('return {data="data.lua",actions={gen="action.lua"}}')
         self.exec(["xmake", "xdtc", "--config=配置 空格/reserved.lua", "gen"], cwd=consumer, expected=None)
+
+    def test_027_xdtc_action_selected_input(self):
+        consumer = self.base / "selected consumer"
+        consumer.mkdir()
+        (consumer / "xmake.lua").write_text('target("consumer")\nset_kind("phony")\n')
+        (consumer / "data.lua").write_text('return {tools={console={device="/dev/fixture"}},unrelated=true}')
+        (consumer / "action.lua").write_text('''function main(serial, marker)
+    assert(serial.port == "/dev/fixture" and serial.tools == nil and serial.unrelated == nil)
+    io.writefile(path.join(os.scriptdir(), marker), serial.port)
+end
+''')
+        config = consumer / "xdtc.lua"
+        def configure(select):
+            config.write_text('return {data="data.lua",actions={console={script="action.lua",select=' + select + '}}}')
+        configure('function(root) return {port=root.tools.console.device} end')
+        self.exec(["xmake", "xdtc", "console", "function.txt"], cwd=consumer)
+        (consumer / "data.lua").write_text('return {settings={serial={port="/dev/fixture"}}}')
+        configure('"settings.serial"')
+        self.exec(["xmake", "xdtc", "console", "subtree.txt"], cwd=consumer)
+        for filename in ("function.txt", "subtree.txt"):
+            self.assertEqual((consumer / filename).read_text(), "/dev/fixture")
+        for selector, message in (
+            ('"absent"', "select path not found"),
+            ('"settings.serial.port"', "select must return an object"),
+            ('nil', "requires select"),
+            ('function() error("bad selector") end', "select failed"),
+        ):
+            configure(selector)
+            result = self.exec(["xmake", "xdtc", "console", "should-not-run.txt"], cwd=consumer, expected=None)
+            self.assertIn(message, result.stdout + result.stderr)
+            self.assertFalse((consumer / "should-not-run.txt").exists())
 
     def test_03_xspm_default_and_selected_root(self):
         manifest = {"version": 1, "package": "addon-consumer",

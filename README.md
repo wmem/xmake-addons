@@ -18,7 +18,7 @@
 
 ```lua
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
-add_addons("xdtc 0.1.x", "xspm 0.1.x", "cautest 0.1.x")
+add_addons("xdtc 0.2.x", "xspm 0.1.x", "cautest 0.1.x")
 ```
 
 提交工程生成的 `xmake-addons.lock` 固定分发版本。
@@ -82,3 +82,9 @@ xdtc `0.1.2` 固定源码 `af7a5b1`（工具 v0.6.0），使用 `gen/data/run` �
 2026-10-06 的 14 项插件回归通过，包括数据文本重新加载、脚本及动作执行、配置转发、
 当前目录与 -P、空格／中文路径和错误退出；工具 44 项回归通过。
 详见 [动作与路径验证](tests/validation-xdtc-actions.json)。
+
+xdtc `0.2.0` 固定源码 `00f1f8c`（工具 v0.7.0）。action 改为 `{script, select}`，
+select 支持 `"."`、点分对象路径和 Lua 函数；旧字符串声明需要迁移。
+gen/data/run 的数据语义保持不变，公开 select_action 供应用读取器复用筛选。
+源码 51 项与隔离真实配方安装 15 项回归通过，见
+[输入筛选验证](tests/validation-xdtc-select.json)。
