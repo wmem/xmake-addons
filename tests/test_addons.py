@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.2.1", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.2.2", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -148,7 +148,7 @@ class AddonTests(unittest.TestCase):
     add_rules("@addon/xdtc/codegen")
     on_run(function()
         local generator = import("@addon.xdtc.generator")
-        assert(generator.version() == "0.8.0")
+        assert(generator.version() == "0.8.1")
     end)
 """)
         (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')
@@ -288,6 +288,69 @@ target_end()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("select must return an object", result.stdout + result.stderr)
         self.assertFalse((consumer / "selected.txt").exists())
+
+    def test_029_xdtc_action_reference_reuses_selection_without_execution(self):
+        consumer = self.base / "action reference 中文"
+        application = consumer / "app with spaces"
+        data_dir = application / "data"
+        data_dir.mkdir(parents=True)
+        (consumer / "xmake.lua").write_text('includes("app with spaces/xmake.lua")')
+        entry = application / "xdtc.lua"
+        description = '''return {data="data/board.lua",actions={toolconfig={
+    script="must-not-execute.lua",
+    select=function(root) return {chip=root.hardware.mcu.chip, debug=root.debug} end,
+}}}'''
+        entry.write_text(description)
+        data = data_dir / "board.lua"
+        data.write_text('return {hardware={mcu={chip="fixture"}},debug={frequency=100000}}')
+        (application / "must-not-execute.lua").write_text('''function main(config)
+    io.writefile(path.join(os.projectdir(), "executed.txt"), "unexpected")
+    raise("读取配置不应执行 action")
+end''')
+        (application / "xmake.lua").write_text('''
+includes("@addon/xdtc/config")
+local board = xdtc_config("xdtc.lua")
+rule("consumer")
+    on_load(function(target)
+        local getter = target:extraconf("rules", "consumer", "config")
+        assert(type(getter) == "function", "select_action 必须返回函数")
+        local sandbox = import("core.sandbox.sandbox")
+        local read = sandbox.fork(getter):script()
+        local selected, base = read()
+        assert(selected.chip == "fixture" and selected.debug.frequency == 100000)
+        assert(base == path.join(os.projectdir(), "app with spaces/data"))
+        selected.debug.frequency = 1
+        assert(read().debug.frequency == 100000)
+        io.writefile(path.join(os.projectdir(), "selected.txt"), selected.chip)
+    end)
+rule_end()
+target("consumer")
+    set_kind("phony")
+    add_rules("consumer", {config=board:select_action("toolconfig")})
+target_end()
+''')
+        self.exec(["xmake", "f", "-y"], cwd=consumer)
+        self.assertEqual((consumer / "selected.txt").read_text(), "fixture")
+        self.assertFalse((consumer / "executed.txt").exists())
+        # 数据改组只修改 action 的选择器，使用方声明和字段约定不变。
+        data.write_text('return {soc={processor={chip="fixture"}},debug={frequency=100000}}')
+        description = description.replace("root.hardware.mcu", "root.soc.processor")
+        entry.write_text(description)
+        self.exec(["xmake", "f", "-y"], cwd=consumer)
+        self.assertFalse((consumer / "executed.txt").exists())
+        for invalid, message in [
+            (description.replace("toolconfig=", "other="), "unknown action"),
+            (description.replace('return {chip=root.soc.processor.chip, debug=root.debug}',
+                                 "return nil"), "select must return an object"),
+        ]:
+            entry.write_text(invalid)
+            (consumer / "selected.txt").unlink()
+            result = self.exec(["xmake", "f", "-y"], cwd=consumer, expected=None)
+            self.assertIn(message, result.stdout + result.stderr)
+            self.assertFalse((consumer / "executed.txt").exists())
+            self.assertFalse((consumer / "selected.txt").exists())
+            entry.write_text(description)
+            self.exec(["xmake", "f", "-y"], cwd=consumer)
 
     def test_03_xspm_default_and_selected_root(self):
         manifest = {"version": 1, "package": "addon-consumer",

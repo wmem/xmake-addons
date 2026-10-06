@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-06",
+  "status": "PASS",
+  "distributionVersion": "0.2.2",
+  "toolVersion": "0.8.1",
+  "sourceCommit": "c365c2342e6365f3da3c80714bd7e213c2695611",
+  "tests": 17,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "源码 62 项回归",
+    "实际配方安装的 17 项插件集成回归",
+    "select_action 返回零参数读取函数，由使用方绑定脚本环境后调用",
+    "复用 action 的输入选择并返回实际数据目录，读取不执行 action 脚本",
+    "数据改组只调整 action 选择器，消费者字段与声明保持不变",
+    "未知 action 与无效结果明确失败；保留原有命令与 select 接口"
+  ],
+  "evidence": {
+    "regressionLog": "/share/project/common/mcu/code/gd32-template/build/action-config/addons.log",
+    "sourceLog": "/share/project/common/mcu/code/gd32-template/build/action-config/source.log"
+  }
+}

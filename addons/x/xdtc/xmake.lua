@@ -9,6 +9,7 @@ add_versions("0.1.1", "e8b6c1b605054246e173a2b67b511fdd301efb06")
 add_versions("0.1.2", "af7a5b1c350879e35fe2c9155c638c8ee9d67af7")
 add_versions("0.2.0", "00f1f8c2d1f1a5e9c17b26d8ccc0f08b5575ece6")
 add_versions("0.2.1", "afaf17d1ceedf4b3b4ec9f3ea44b3fa56d946873")
+add_versions("0.2.2", "c365c2342e6365f3da3c80714bd7e213c2695611")
 on_load(function(package)
 	-- 本地开发仍按配方的提交号检出，不消费未提交修改。
 	local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
@@ -27,7 +28,7 @@ on_test(function(package)
 		assert(os.isfile(package:installdir("rules/codegen/xmake.lua")), "缺少代码生成规则")
 		assert(os.isfile(package:installdir("modules/generator.lua")), "缺少生成 API")
 	end
-	if package:version_str() == "0.2.1" then
+	if package:version():ge("0.2.1") then
 		assert(os.isfile(package:installdir("includes/config/xmake.lua")), "缺少配置引用接口")
 	end
 end)

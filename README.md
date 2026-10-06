@@ -90,3 +90,6 @@ gen/data/run 的数据语义保持不变，公开 select_action 供应用读取�
 [输入筛选验证](tests/validation-xdtc-select.json)。
 
 xdtc `0.2.1` 固定源码 `afaf17d`（工具 v0.8.0），新增 `includes("@addon/xdtc/config")` 与 `xdtc_config(file):select(selector)`。select 返回读取函数，由使用方在脚本环境中显式调用后取得 table；支持对象路径和函数组装，不改变现有 action 或生成入口。源码 58 项、隔离真实配方安装 16 项回归通过，见 [配置引用验证](tests/validation-xdtc-config.json)。
+
+
+xdtc `0.2.2` 固定源码 `c365c23`（工具 v0.8.1），新增 `xdtc_config(file):select_action(name)`。返回读取函数，复用任务配置中 action 的选择器并返回数据目录，不执行 action 脚本或代码生成；项目不再需要包装读取模块。源码 62 项与隔离真实配方安装 17 项回归通过，见 [action 配置引用验证](tests/validation-xdtc-action-config.json)。
