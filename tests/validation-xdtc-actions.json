@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-06",
+  "status": "PASS",
+  "distributionVersion": "0.1.2",
+  "toolVersion": "0.6.0",
+  "sourceCommit": "af7a5b1c350879e35fe2c9155c638c8ee9d67af7",
+  "tests": 14,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "14 项完整插件安装回归，包含 gen/data/run/action 和保留名称保护",
+    "展开数据作为 Lua 重新读取，无模板 metadata，不触发生成",
+    "配置转发、当前目录与 -P、文件相对路径和绝对路径、空格及中文",
+    "脚本 main 接收完整数据和位置参数，脚本失败返回非零",
+    "xdtc 源码 44 项回归通过，包含同一进程快速改写配置及脚本"
+  ],
+  "evidence": {
+    "regressionLog": "/share/project/common/mcu/code/gd32-template/build/xdtc-actions/addon-tests.log",
+    "sourceLog": "/share/project/common/mcu/code/gd32-template/build/xdtc-actions/source-tests.log"
+  },
+  "limitations": [
+    "插件回归隔离安装本地源码快照；真实远程升级和板上结果在消费工程另行记录"
+  ]
+}

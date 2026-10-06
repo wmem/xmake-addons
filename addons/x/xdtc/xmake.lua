@@ -6,6 +6,7 @@ set_description("xdtc 的 Xmake 命令插件")
 add_urls("https://github.com/wmem/xdtc.git")
 add_versions("0.1.0", "b24b54f4b708ee61b85634df1215909a15d43d5e")
 add_versions("0.1.1", "e8b6c1b605054246e173a2b67b511fdd301efb06")
+add_versions("0.1.2", "af7a5b1c350879e35fe2c9155c638c8ee9d67af7")
 on_load(function(package)
 	-- 本地开发仍按配方的提交号检出，不消费未提交修改。
 	local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")

@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.1.1", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.1.2", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -131,14 +131,14 @@ class AddonTests(unittest.TestCase):
         (self.project / "value.tpl").write_text('int value = {{ value }};\n')
         config = 'return {data="data.lua",tpl={{files={"value.tpl"},out="%s"}}}\n'
         (self.project / "xdtc.lua").write_text(config % "default.c")
-        self.run_tool("xdtc")
+        self.run_tool("xdtc", "gen")
         self.assertEqual((self.project / "default.c").read_text(), "int value = 42;")
         selected = self.project / "selected 中文.lua"
         selected.write_text(config % "selected.c")
-        self.exec(["xmake", "xdtc", "-P", str(self.project), "--config=selected 中文.lua"])
+        self.exec(["xmake", "xdtc", "-P", str(self.project), "--config=selected 中文.lua", "gen"])
         self.assertTrue((self.project / "selected.c").is_file())
-        self.run_tool("xdtc", f"--config={selected}")
-        self.run_tool("xdtc", "--config=missing.lua", expected=None)
+        self.run_tool("xdtc", f"--config={selected}", "gen")
+        self.run_tool("xdtc", "--config=missing.lua", "gen", expected=None)
 
     def test_025_codegen_rule_and_public_module(self):
         consumer = self.base / "codegen consumer"
@@ -148,7 +148,7 @@ class AddonTests(unittest.TestCase):
     add_rules("@addon/xdtc/codegen")
     on_run(function()
         local generator = import("@addon.xdtc.generator")
-        assert(generator.version() == "0.5.0")
+        assert(generator.version() == "0.6.0")
     end)
 """)
         (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')
@@ -166,6 +166,49 @@ class AddonTests(unittest.TestCase):
         self.exec(["xmake", "run", "generated"], cwd=consumer)
         (consumer / "data.lua").write_text("invalid Lua !!!")
         self.exec(["xmake", "build", "-y"], cwd=consumer, expected=None)
+
+    def test_026_xdtc_data_run_actions_and_paths(self):
+        consumer = self.base / "action consumer"
+        consumer.mkdir()
+        (consumer / "xmake.lua").write_text('target("consumer")\nset_kind("phony")\n')
+        nested = consumer / "配置 空格"
+        nested.mkdir()
+        (nested / "defaults.lua").write_text('return {sample={enable=true,match="value.tpl"},number=1,values={1,2},disabled={enable=false}}')
+        (nested / "data.lua").write_text('local base=path.absolute("defaults.lua",os.scriptdir())\ninclude(base)\nreplace("values",{})\nreturn {number=42,serial={port="/dev/fixture"}}')
+        (nested / "action.lua").write_text('''function main(config, marker)
+    assert(config.number == 42 and config.name == nil and #config.values == 0)
+    assert(config.disabled.enable == false and config.serial.port == "/dev/fixture")
+    io.writefile(path.join(os.scriptdir(), marker or "action.txt"), tostring(config.number))
+end
+''')
+        (nested / "value.tpl").write_text('value={{root.number}}')
+        (nested / "xdtc.lua").write_text('return {data="data.lua",tpl={{files={"value.tpl"},out="generated.txt"}},actions={inspect="action.lua"}}')
+        (consumer / "xdtc.lua").write_text('local xdtc=import("@addon.xdtc.generator")\nreturn xdtc.load_config(path.join(os.scriptdir(),"配置 空格/xdtc.lua"))')
+        expanded = self.exec(["xmake", "xdtc", "data"], cwd=consumer).stdout
+        self.assertTrue(expanded.startswith("return "), expanded)
+        self.assertFalse((nested / "generated.txt").exists())
+        (consumer / "expanded.lua").write_text(expanded)
+        (consumer / "check.lua").write_text('function main(config) assert(config.number==42 and config.name==nil and #config.values==0) end')
+        (consumer / "roundtrip.lua").write_text('return {data="expanded.lua"}')
+        self.exec(["xmake", "xdtc", "--config=roundtrip.lua", "run", "check.lua"], cwd=consumer)
+        self.exec(["xmake", "xdtc", "run", "action.lua", "run.txt"], cwd=consumer)
+        self.exec(["xmake", "xdtc", "inspect", "inspect.txt"], cwd=consumer)
+        original = (consumer / "xdtc.lua").read_text()
+        (consumer / "xdtc.lua").write_text('return {data="unused.lua",actions={}}')
+        self.exec(["xmake", "xdtc", "inspect", "nested.txt"], cwd=nested)
+        (consumer / "xdtc.lua").write_text(original)
+        for filename in ("run.txt", "inspect.txt", "nested.txt"):
+            self.assertEqual((nested / filename).read_text(), "42")
+        self.exec(["xmake", "xdtc", "-P", str(consumer), f"--config={nested / 'xdtc.lua'}", "gen"])
+        self.assertEqual((nested / "generated.txt").read_text(), "value=42")
+        self.assertFalse((consumer / "generated.txt").exists())
+        for arguments in ([], ["run"], ["gen", "extra"], ["missing-action"]):
+            self.exec(["xmake", "xdtc", *arguments], cwd=consumer, expected=None)
+        (nested / "fail.lua").write_text('function main(config) raise("fixture action failure") end')
+        failure = self.exec(["xmake", "xdtc", "run", "fail.lua"], cwd=consumer, expected=None)
+        self.assertIn("fixture action failure", failure.stdout + failure.stderr)
+        (nested / "reserved.lua").write_text('return {data="data.lua",actions={gen="action.lua"}}')
+        self.exec(["xmake", "xdtc", "--config=配置 空格/reserved.lua", "gen"], cwd=consumer, expected=None)
 
     def test_03_xspm_default_and_selected_root(self):
         manifest = {"version": 1, "package": "addon-consumer",
