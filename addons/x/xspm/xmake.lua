@@ -5,6 +5,7 @@ set_homepage("https://github.com/wmem/xspm")
 set_description("xspm 的 Xmake 命令插件")
 add_urls("https://github.com/wmem/xspm.git")
 add_versions("0.1.0", "020a9231c3eb6f5b5adec2895f0375ecc44eaaba")
+add_versions("0.1.1", "f4a6133c177e9767379933bb63784854ab9e5ec9")
 on_load(function(package)
     -- 本地开发仍按配方的提交号检出，不消费未提交修改。
     local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")

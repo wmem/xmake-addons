@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.1.1", "cautest": "0.1.3", "xspm": "0.1.0"}[tool]
+            version = {"xdtc": "0.1.1", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -168,11 +168,18 @@ class AddonTests(unittest.TestCase):
         self.exec(["xmake", "build", "-y"], cwd=consumer, expected=None)
 
     def test_03_xspm_default_and_selected_root(self):
-        manifest = {"version": 1, "dependencies": {"library": str(self.remote) + "#main"}}
+        manifest = {"version": 1, "package": "addon-consumer",
+                    "dependencies": {"library": str(self.remote) + "#main"}}
         (self.project / "xspm.json").write_text(json.dumps(manifest))
         self.run_tool("xspm", "--lock")
         self.run_tool("xspm", "--status")
         self.assertTrue((self.project / "deps/library/value.txt").is_file())
+        repo = self.project / "deps/library"
+        self.assertEqual(self.exec(["git", "branch", "--show-current"], cwd=repo).stdout.strip(),
+                         "addon-consumer")
+        self.run_tool("xspm")
+        self.assertEqual(self.exec(["git", "branch", "--show-current"], cwd=repo).stdout.strip(),
+                         "addon-consumer")
         sub = self.project / "config with spaces"
         sub.mkdir()
         selected = sub / "packages.json"
@@ -181,6 +188,8 @@ class AddonTests(unittest.TestCase):
         self.run_tool("xspm", f"--config={selected}", "--status")
         self.assertTrue((sub / "deps/library/value.txt").is_file())
         self.assertTrue((sub / "xspm-lock.json").is_file())
+        self.assertEqual(self.exec(["git", "branch", "--show-current"], cwd=sub / "deps/library").stdout.strip(),
+                         "addon-consumer")
         self.run_tool("xspm", "--config=missing.json", "--list", expected=None)
 
     def write_ctest(self, file, case="answer", value=42):

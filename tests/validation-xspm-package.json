@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-06",
+  "status": "PASS",
+  "distributionVersion": "0.1.1",
+  "toolVersion": "0.3.0",
+  "sourceCommit": "f4a6133c177e9767379933bb63784854ab9e5ec9",
+  "tests": 13,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "13 项完整插件回归：配方安装、命令、失败重试和卸载",
+    "安装后的 xspm 创建工程分支，重复同步及指定配置保留分支",
+    "xspm 完整源码测试通过，包含新增 16 项工程分支与提交保护回归"
+  ],
+  "evidence": {
+    "regressionLog": "/share/project/common/mcu/code/gd32-template/build/xspm-package/addon-tests.log",
+    "sourceLog": "/share/project/common/mcu/code/gd32-template/build/xspm-package/full-tests.log"
+  },
+  "limitations": [
+    "插件回归在隔离目录安装本地源码快照；远程升级在消费工程另行验证",
+    "未访问 MCU 板卡"
+  ]
+}

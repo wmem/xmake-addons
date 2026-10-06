@@ -68,5 +68,11 @@ Cautest `0.1.3` 配方固定源码 `6f2fdaa`（工具内部版本 0.5.0），增
 版本和范围见 [ctest 收集器接入验证](tests/validation-ctest-collectors.json)。
 
 工具源码和新索引推送后，消费工程执行 `xmake addon --upgrade`，由 Xmake 更新已安装插件及
-`xmake-addons.lock`。cmlib 根工程和 `test/` 子工程有各自的锁，都需要升级；
+`xmake-addons.lock`。有独立 Addon lock 的消费工程需要分别升级；
 只修改工具源码不会改变已经安装的命令，`cautest 0.1.x` 声明本身无需改变。
+
+xspm `0.1.1` 配方固定源码 `f4a6133`（工具版本 v0.3.0），支持顶层 `xspm.json`
+的 `package` 指定所有依赖的本地开发分支；同步保护额外本地提交，源码 ref 与 lock 继续固定版本。
+2026-10-06 的 13 项插件回归通过，包含实际安装后的工程分支、重复同步和指定配置。
+工具完整测试同时通过，其中新增 16 项分支回归。版本与范围见
+[工程分支验证](tests/validation-xspm-package.json)。
