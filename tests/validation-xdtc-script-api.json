@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-07",
+  "status": "PASS",
+  "distributionVersion": "0.3.0",
+  "toolVersion": "0.9.0",
+  "sourceCommit": "1953d42a318e4c5e82e42b341cc818d6a9ece022",
+  "tests": 18,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "源码 69 项回归",
+    "真实配方安装的 18 项插件回归",
+    "run/action 第二个参数提供独立 API；命令参数从第三个开始",
+    "任意 table 按需渲染字符串或文件模板，返回字符串，不自动写文件",
+    "模板路径相对脚本目录，绝对路径直接使用",
+    "API 对象执行间隔离；模板修改后读取最新内容；错误传播",
+    "配置引用和既有 gen/data 行为保持"
+  ],
+  "evidence": {
+    "regressionLog": "/share/project/common/mcu/code/gd32-template/build/script-api/addons.log",
+    "sourceLog": "/share/project/common/mcu/code/gd32-template/build/script-api/source.log"
+  }
+}

@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.2.2", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.3.0", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -148,7 +148,7 @@ class AddonTests(unittest.TestCase):
     add_rules("@addon/xdtc/codegen")
     on_run(function()
         local generator = import("@addon.xdtc.generator")
-        assert(generator.version() == "0.8.1")
+        assert(generator.version() == "0.9.0")
     end)
 """)
         (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')
@@ -175,7 +175,7 @@ class AddonTests(unittest.TestCase):
         nested.mkdir()
         (nested / "defaults.lua").write_text('return {sample={enable=true,match="value.tpl"},number=1,values={1,2},disabled={enable=false}}')
         (nested / "data.lua").write_text('local base=path.absolute("defaults.lua",os.scriptdir())\ninclude(base)\nreplace("values",{})\nreturn {number=42,serial={port="/dev/fixture"}}')
-        (nested / "action.lua").write_text('''function main(config, marker)
+        (nested / "action.lua").write_text('''function main(config, api, marker)
     assert(config.number == 42 and config.name == nil and #config.values == 0)
     assert(config.disabled.enable == false and config.serial.port == "/dev/fixture")
     io.writefile(path.join(os.scriptdir(), marker or "action.txt"), tostring(config.number))
@@ -215,7 +215,7 @@ end
         consumer.mkdir()
         (consumer / "xmake.lua").write_text('target("consumer")\nset_kind("phony")\n')
         (consumer / "data.lua").write_text('return {tools={console={device="/dev/fixture"}},unrelated=true}')
-        (consumer / "action.lua").write_text('''function main(serial, marker)
+        (consumer / "action.lua").write_text('''function main(serial, api, marker)
     assert(serial.port == "/dev/fixture" and serial.tools == nil and serial.unrelated == nil)
     io.writefile(path.join(os.scriptdir(), marker), serial.port)
 end
@@ -351,6 +351,38 @@ target_end()
             self.assertFalse((consumer / "selected.txt").exists())
             entry.write_text(description)
             self.exec(["xmake", "f", "-y"], cwd=consumer)
+
+    def test_030_xdtc_script_api_renders_on_demand(self):
+        consumer = self.base / "script API 中文"
+        scripts = consumer / "scripts"
+        templates = scripts / "templates"
+        templates.mkdir(parents=True)
+        (consumer / "xmake.lua").write_text('target("consumer")\nset_kind("phony")')
+        (consumer / "board.lua").write_text('return {payload={value="a < b"}}')
+        (templates / "value.tpl").write_text("value={{ value }}")
+        (scripts / "render.lua").write_text('''assert(api == nil)
+function main(data, api, output)
+    assert(type(api.template.render) == "function")
+    local context = data.payload or data
+    assert(api.template.render("{{ value }}", context, {escape=false}) == "a < b")
+    local content = api.template.render_file("templates/value.tpl", context, {escape=false})
+    io.writefile(path.join(os.scriptdir(), output), content)
+end''')
+        (consumer / "xdtc.lua").write_text('''return {
+    data="board.lua",
+    tpl={{files={"absent.tpl"},out="must-not-generate.c"}},
+    actions={render={script="scripts/render.lua",select="payload"}},
+}''')
+        self.exec(["xmake", "xdtc", "run", "scripts/render.lua", "run.txt"], cwd=consumer)
+        self.exec(["xmake", "xdtc", "render", "action.txt"], cwd=consumer)
+        for name in ("run.txt", "action.txt"):
+            self.assertEqual((scripts / name).read_text(), "value=a < b")
+        self.assertFalse((consumer / "must-not-generate.c").exists())
+        (scripts / "bad.lua").write_text('''function main(data, api)
+    return api.template.render_file("templates/absent.tpl", data)
+end''')
+        result = self.exec(["xmake", "xdtc", "run", "scripts/bad.lua"], cwd=consumer, expected=None)
+        self.assertIn("template file not found", result.stdout + result.stderr)
 
     def test_03_xspm_default_and_selected_root(self):
         manifest = {"version": 1, "package": "addon-consumer",

@@ -18,7 +18,7 @@
 
 ```lua
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
-add_addons("xdtc 0.2.x", "xspm 0.1.x", "cautest 0.1.x")
+add_addons("xdtc 0.3.x", "xspm 0.1.x", "cautest 0.1.x")
 ```
 
 提交工程生成的 `xmake-addons.lock` 固定分发版本。
@@ -93,3 +93,6 @@ xdtc `0.2.1` 固定源码 `afaf17d`（工具 v0.8.0），新增 `includes("@addo
 
 
 xdtc `0.2.2` 固定源码 `c365c23`（工具 v0.8.1），新增 `xdtc_config(file):select_action(name)`。返回读取函数，复用任务配置中 action 的选择器并返回数据目录，不执行 action 脚本或代码生成；项目不再需要包装读取模块。源码 62 项与隔离真实配方安装 17 项回归通过，见 [action 配置引用验证](tests/validation-xdtc-action-config.json)。
+
+
+xdtc `0.3.0` 固定源码 `1953d42`（工具 v0.9.0），run 和 action 入口统一改为 `main(data, api, ...)`。脚本能力作为第二个参数传入，命令位置参数从第三个参数开始；旧脚本接收位置参数时需要调整签名。api.template.render/render_file 复用既有模板引擎，返回字符串，是否渲染与写文件由脚本决定；文件模板相对当前脚本目录。源码 69 项与隔离真实配方安装 18 项回归通过，见 [脚本 API 验证](tests/validation-xdtc-script-api.json)。
