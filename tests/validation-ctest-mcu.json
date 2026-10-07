@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-07",
+  "tool": "cautest",
+  "distributionVersion": "0.1.4",
+  "toolVersion": "0.6.1",
+  "toolCommit": "c2e57828dddc760226ed2756005df6d30432722a",
+  "status": "PASS",
+  "command": "ADDON_TEST_EVIDENCE=/tmp/addon-mcu-evidence-20261007 uv run --no-project python tests/test_addons.py",
+  "tests": { "passed": 19, "failed": 0, "skipped": 0 },
+  "scope": [
+    "隔离 XMAKE_GLOBALDIR 使用本地 Git 快照实际安装三个插件",
+    "安装时编译 TypeScript，运行资源中没有 node_modules",
+    "公开 MCU include 在普通 xmake build 中生成 Registry 和身份头",
+    "应用提供 main，使用静态 MCU Runtime 初始化和空闲轮询",
+    "原有 Native、筛选、失败退出码和其他插件回归"
+  ],
+  "hardwareRecord": "https://github.com/wmem/cautest/blob/master/docs/tests/mcu-rtthread-xmake-20261007.md",
+  "limits": "本索引回归使用源码快照及本地配方，不连接硬件；远程固定提交的安装另由 gd32-template 验证。"
+}

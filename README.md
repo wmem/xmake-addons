@@ -67,6 +67,12 @@ Cautest `0.1.3` 配方固定源码 `6f2fdaa`（工具内部版本 0.5.0），增
 13 项插件回归通过，包含真实配方安装后的 FAIL 运行收集，以及 list / plan 不执行收集。
 版本和范围见 [ctest 收集器接入验证](tests/validation-ctest-collectors.json)。
 
+Cautest `0.1.4` 配方固定源码 `c2e5782`（工具内部版本 0.6.1，C API 2.2），提供可移植 MCU
+运行时和 `includes("@addon/cautest/mcu")` 普通固件构建入口。19 项隔离插件回归通过，
+包含只使用公开规则、不调用 ctest 即可编译及执行公共 MCU 运行时；此前 Native 用法继续通过。
+真实 GD32/RT-Thread 测试由消费工程和 MSP 提供，详见
+[MCU 接入验证](tests/validation-ctest-mcu.json)及工具仓库的实板记录。
+
 工具源码和新索引推送后，消费工程执行 `xmake addon --upgrade`，由 Xmake 更新已安装插件及
 `xmake-addons.lock`。有独立 Addon lock 的消费工程需要分别升级；
 只修改工具源码不会改变已经安装的命令，`cautest 0.1.x` 声明本身无需改变。

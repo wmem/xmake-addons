@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.3.0", "cautest": "0.1.3", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.3.0", "cautest": "0.1.4", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -433,6 +433,40 @@ ctest.native {id="unit.addon",target="test.addon"}
         report = json.loads(Path(summary["resultPath"]).read_text())
         self.assertEqual(report["status"], "SUCCESS")
         self.assertEqual(report["jobs"][0]["groups"][0]["cases"][0]["status"], "PASS")
+
+    def test_045_public_mcu_rule_builds_without_ctest_command(self):
+        consumer = self.base / "mcu consumer"
+        consumer.mkdir()
+        (consumer / "xmake.lua").write_text('''includes("@addon/cautest/mcu")
+target("firmware")
+set_kind("binary")
+add_rules("cautest.mcu")
+add_values("cautest.registry.suites", "sample")
+add_files("app.c")
+target_end()
+''')
+        (consumer / "app.c").write_text('''#include <cautest/mcu.h>
+#include "cautest_config.h"
+extern const struct cautest_registry cautest_mcu_registry;
+CAUTEST_CASE(check) { CAUTEST_EXPECT_EQ_INT(1, 1); }
+CAUTEST_SUITE(sample, CAUTEST_CASE_ENTRY(check));
+static CAUTEST_WORKSPACE(workspace, CAUTEST_MCU_WORKSPACE_SIZE);
+static struct cautest_mcu runtime;
+static long receive(void* context, unsigned char* data, unsigned long size) { return 0; }
+static int send(void* context, const unsigned char* data, unsigned long size) { return 0; }
+int main(void) {
+    static const struct cautest_mcu_config config = {
+        .protocol = { .registry = &cautest_mcu_registry, .build_id = CAUTEST_MCU_BUILD_ID,
+            .boot_id = "test", .workspace = CAUTEST_WORKSPACE_INIT(workspace), .write = send },
+        .read = receive,
+    };
+    if (cautest_mcu_init(&runtime, &config)) return 1;
+    return cautest_mcu_poll(&runtime) == CAUTEST_MCU_IDLE ? 0 : 1;
+}
+''')
+        self.exec(["xmake", "build", "firmware"], cwd=consumer)
+        self.exec(["xmake", "run", "firmware"], cwd=consumer)
+        self.assertFalse((consumer / "ctest.lua").exists())
 
     def test_05_ctest_selected_and_failure_exit(self):
         sub = self.project / "tests with spaces"

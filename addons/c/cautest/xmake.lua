@@ -8,6 +8,7 @@ add_versions("0.1.0", "b7046d765846909efb3e63759e109a5ebc61b8bc")
 add_versions("0.1.1", "3c74b6253d3153d845a9772fa4d36ba249ac7d04")
 add_versions("0.1.2", "967889387a72e36f2e79fcd83dd2d9e378dbb000")
 add_versions("0.1.3", "6f2fdaa16d8f2ca04675ea52d4ccfa14c6a3f5a3")
+add_versions("0.1.4", "c2e57828dddc760226ed2756005df6d30432722a")
 on_load(function(package)
 	-- 本地开发仍按配方的提交号检出，不消费未提交修改。
 	local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
@@ -22,5 +23,9 @@ on_install(function(package)
 end)
 on_test(function(package)
 	assert(os.isfile(package:installdir("plugins/ctest/main.lua")), "缺少插件命令入口")
+	if package:version():ge("0.1.4") then
+		assert(os.isfile(package:installdir("includes/mcu/xmake.lua")), "缺少 MCU 公开构建入口")
+		assert(os.isfile(package:installdir("plugins/ctest/runtime/assets/cautest-c/include/cautest/mcu.h")), "缺少 MCU C 接口")
+	end
 end)
 package_end()
