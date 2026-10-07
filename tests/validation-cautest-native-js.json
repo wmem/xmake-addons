@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-07",
+  "addon": "cautest",
+  "addonVersion": "0.1.5",
+  "toolVersion": "0.7.0",
+  "toolCommit": "840aff6cae69f42c49460877a72ef073adfffa0b",
+  "platform": "Linux x86_64",
+  "sourceTests": {
+    "pass": 175,
+    "fail": 0,
+    "skip": 0
+  },
+  "addonTests": {
+    "pass": 20,
+    "fail": 0
+  },
+  "coverage": [
+    "JS 原生配置、准备任务、直接 CLI、筛选、FAIL 退出",
+    "原有 Lua 配置、公开 MCU 构建入口",
+    "真实配方 npm/TS 构建、隔离安装与卸载"
+  ],
+  "limits": [
+    "本轮没有新增真实 MCU 或 Kernel UML 验收"
+  ]
+}

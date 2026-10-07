@@ -6,9 +6,9 @@
 | --- | --- | --- |
 | xdtc | `xmake xdtc` | `xdtc.lua` |
 | xspm | `xmake xspm` | `xspm.json` |
-| cautest | `xmake ctest` | `ctest.lua` |
+| cautest | `xmake ctest` | `cautest.config.mjs/js/cjs`；未迁移工程为 `ctest.lua` |
 
-三个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
+三个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。安装目录不参与应用路径解析。cautest Addon 0.1.5 的 JS 路径直接调用原生 CLI；可通过工程的 `cautest.prepare` 任务导出编译环境。未迁移的 Lua 工程继续使用 `ctest.*` API，不合并两份配置。
 
 ## 安装与开发
 
@@ -102,3 +102,5 @@ xdtc `0.2.2` 固定源码 `c365c23`（工具 v0.8.1），新增 `xdtc_config(fil
 
 
 xdtc `0.3.0` 固定源码 `1953d42`（工具 v0.9.0），run 和 action 入口统一改为 `main(data, api, ...)`。脚本能力作为第二个参数传入，命令位置参数从第三个参数开始；旧脚本接收位置参数时需要调整签名。api.template.render/render_file 复用既有模板引擎，返回字符串，是否渲染与写文件由脚本决定；文件模板相对当前脚本目录。源码 69 项与隔离真实配方安装 18 项回归通过，见 [脚本 API 验证](tests/validation-xdtc-script-api.json)。
+
+Cautest `0.1.5` 对应工具 0.7.0，增加原生 JS 入口和独立链接驱动。20 项隔离配方回归通过，覆盖新 JS 路径、原有 Lua 入口和公开 MCU 构建规则；具体边界见工具的 [原生 JS 验收记录](../cautest/docs/tests/native-js-cmlib-20261007.md)。

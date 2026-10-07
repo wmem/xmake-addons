@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.3.0", "cautest": "0.1.4", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.3.0", "cautest": "0.1.5", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -433,6 +433,38 @@ ctest.native {id="unit.addon",target="test.addon"}
         report = json.loads(Path(summary["resultPath"]).read_text())
         self.assertEqual(report["status"], "SUCCESS")
         self.assertEqual(report["jobs"][0]["groups"][0]["cases"][0]["status"], "PASS")
+
+    def test_042_ctest_native_js_prepare_and_direct_cli(self):
+        consumer = self.base / "JS native consumer"
+        consumer.mkdir()
+        (consumer / "xmake.lua").write_text('''set_values("cautest.prepare", "test-env")
+target("product")
+    set_kind("phony")
+target_end()
+task("test-env")
+    set_menu({options={}})
+    on_run(function ()
+        io.writefile(path.join(os.projectdir(), "toolchain.json"), '{"compiler":"cc"}')
+        print("准备输出不属于 JSON")
+    end)
+task_end()
+''')
+        (consumer / "test.c").write_text('''#include <cautest/cautest.h>
+CAUTEST_CASE(pass) { CAUTEST_EXPECT_EQ_INT(1, 1); }
+CAUTEST_SUITE(js_suite, CAUTEST_CASE_ENTRY(pass));
+''')
+        (consumer / "cautest.config.mjs").write_text('''import {readFileSync} from 'node:fs';
+import {nativeCTestJob,testConfig} from '@cautest/config.js';
+const build=JSON.parse(readFileSync(new URL('./toolchain.json',import.meta.url),'utf8'));
+export default testConfig({jobs:[nativeCTestJob({id:'unit.js',tests:['test.c'],suites:['js_suite'],build})]});
+''')
+        listed = self.exec(["xmake", "ctest", "-P", str(consumer), "--list", "--json"])
+        self.assertEqual(json.loads(listed.stdout)[0]["id"], "unit.js")
+        result = self.exec(["xmake", "ctest", "-P", str(consumer), "--json", "--reporter=json,junit"])
+        self.assertEqual(json.loads(result.stdout)["status"], "SUCCESS")
+        entry = self.base / "global/.xmake/addons/cautest/0.1.5/plugins/ctest/runtime/cautest.js"
+        direct = self.exec(["node", str(entry), "run", "--json"], cwd=consumer)
+        self.assertEqual(json.loads(direct.stdout)["status"], "SUCCESS")
 
     def test_045_public_mcu_rule_builds_without_ctest_command(self):
         consumer = self.base / "mcu consumer"
