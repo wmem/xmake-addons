@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-10",
+  "status": "PASS",
+  "versions": {
+    "xdtc": "0.9.0",
+    "xspm": "0.3.0",
+    "cautest": "0.6.1"
+  },
+  "tests": 19,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "scope": [
+    "当前源码快照经真实配方安装，使用隔离 XMAKE_GLOBALDIR 与离线 npm 缓存",
+    "三个命令、数据生成、配置筛选、模板 API、xspm 同步与开发分支",
+    "Native 成功与失败、MCU 公共运行时构建、TS 准备失败重试及卸载",
+    "安装目录使用对齐版本，ctest 帮助默认配置为 ctest.lua"
+  ],
+  "limitations": [
+    "本报告不代表远程冷安装或真实 MCU 测试"
+  ],
+  "evidence": {
+    "logs": "/tmp/addon-version-alignment-20261010/logs"
+  }
+}
