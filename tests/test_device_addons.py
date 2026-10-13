@@ -10,7 +10,7 @@ import unittest
 
 INDEX = Path(__file__).resolve().parents[1]
 TOOLS = INDEX.parent
-VERSIONS = {"xdtc": "0.10.0", "x-pyocd": "0.1.0", "x-console": "0.1.0"}
+VERSIONS = {"xdtc": "0.10.0", "x-pyocd": "0.1.1", "x-console": "0.1.0"}
 
 
 class DeviceAddonTests(unittest.TestCase):

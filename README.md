@@ -12,7 +12,7 @@
 
 五个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。x-pyocd/x-console 不解析板描述，执行系统、速率、芯片、端口及运行命令等所需参数由 config 提供。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
 
-当前新增 xdtc **0.10.0** 及 x-pyocd/x-console **0.1.0**，xdtc Addon 与工具源码发布版本相同。现有发布版本的历史验证记录保留在下文。
+当前 xdtc 为 **0.10.0**、x-pyocd 为 **0.1.1**、x-console 为 **0.1.0**。x-pyocd 0.1.1 增加独立 readback 操作及 backend() 测试桥接接口，源码 13 组 API、14 项后端检查以及 KY3133-B00 实板下载/复位/读回验证通过。Addon 与工具源码发布版本相同，历史配方和验证记录保留在下文。
 
 ## 安装与开发
 
@@ -22,7 +22,7 @@
 
 ```lua
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
-add_addons("xdtc 0.10.0", "x-pyocd 0.1.0", "x-console 0.1.0",
+add_addons("xdtc 0.10.0", "x-pyocd 0.1.1", "x-console 0.1.0",
     "xspm 0.3.x", "cautest 0.6.x")
 ```
 
@@ -50,7 +50,7 @@ xmake addon --install /tmp/x-pyocd-addon-stage
 
 x-console 与 xdtc 使用相同准备流程。隔离验证应使用临时 `XMAKE_GLOBALDIR`，避免覆盖工程当前已安装的插件。插件安装不会自动安装 Python、pyOCD、Node.js 或 PowerShell。
 
-Addon 版本与工具源码发布版本统一：当前 xdtc 为 `0.10.0`、xspm 为 `0.3.0`、cautest 为 `0.6.1`，x-pyocd 与 x-console 为 `0.1.0`。每个配方的 `add_versions()` 固定对应源码发布提交，不跟随浮动分支；Cautest 的 C API 版本仍独立维护。发布新版时先完成工具验证、提交和标签，再发布同号配方。仅文档修改不改变运行时版本。
+Addon 版本与工具源码发布版本统一：当前 xdtc 为 `0.10.0`、xspm 为 `0.3.0`、cautest 为 `0.6.1`、x-pyocd 为 `0.1.1`、x-console 为 `0.1.0`。每个配方的 `add_versions()` 固定对应源码发布提交，不跟随浮动分支；Cautest 的 C API 版本仍独立维护。发布新版时先完成工具验证、提交和标签，再发布同号配方。仅文档修改不改变运行时版本。
 
 此前采用独立的 Addon 版本号，旧配方保留供历史锁文件复现。迁移时修改 `add_addons()` 为上面的版本范围，再在消费工程执行 `xmake addon --upgrade -y`，提交更新后的 `xmake-addons.lock`。`xmake addon --list` 可查看全局活动版本；安装新版本后应确认 `xmake ctest --help` 默认配置为 `ctest.lua`，避免继续使用此前撤回的 `0.1.5` 入口。
 

@@ -5,6 +5,7 @@ set_description("显式配置的 pyOCD 下载和调试工具")
 set_license("MIT")
 add_urls("git@github.com:wmem/x-pyocd.git")
 add_versions("0.1.0", "e8cd289556acf10188635920b60b1be9206dcc40")
+add_versions("0.1.1", "c4473f2e70ad236e334c740868dac3b9c563d5c2")
 on_load(function(package)
     local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
     if root then
@@ -14,7 +15,9 @@ on_load(function(package)
     end
 end)
 on_install(function(package)
-    import("prepare-addon", {rootdir = path.join(os.curdir(), "scripts"), anonymous = true}).install(package)
+    import("prepare-addon", { rootdir = path.join(os.curdir(), "scripts"), anonymous = true }).install(
+        package
+    )
 end)
 on_test(function(package)
     assert(os.isfile(package:installdir("modules/api.lua")), "缺少公开API")
