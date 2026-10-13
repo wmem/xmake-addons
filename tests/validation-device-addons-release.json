@@ -1,0 +1,154 @@
+{
+  "date": "2026-10-13",
+  "status": "PASS",
+  "versions": {
+    "xdtc": "0.10.0",
+    "x-pyocd": "0.1.0",
+    "x-console": "0.1.0",
+    "xspm": "0.3.0",
+    "cautest": "0.6.1"
+  },
+  "sourceCommits": {
+    "xdtc": "955fdf1f3f8d206aefa7b4dce2010b55724d82eb",
+    "x-pyocd": "e8cd289556acf10188635920b60b1be9206dcc40",
+    "x-console": "c3cf6f3a61352a942dbbdbc008cf3980d94af8ed"
+  },
+  "projectIndexCommit": "00fd61fec54c58c5d85d7fd9e31deb9e74dc2b7d",
+  "environment": {
+    "build": "Linux/WSL",
+    "deviceHost": "Windows",
+    "board": "KY3133-B00",
+    "probe": "BC496BA027E9",
+    "serial": "COM23/115200/8N1"
+  },
+  "regression": {
+    "xdtcChecks": 72,
+    "existingAddonTests": 19,
+    "fixedRecipeDeviceAddonTests": 4,
+    "failures": 0,
+    "errors": 0
+  },
+  "remoteInstallation": {
+    "status": "PASS",
+    "scope": "当前实际MCU工程使用远程索引，未设置XMAKE_ADDON_SOURCE_ROOT，三个新版工具均从GitHub克隆安装，工具锁由Xmake生成；xspm/cautest原版本和锁定提交保持"
+  },
+  "actualProject": {
+    "status": "PASS",
+    "steps": [
+      {
+        "name": "installed-modules",
+        "status": "PASS"
+      },
+      {
+        "name": "x-pyocd-help",
+        "status": "PASS"
+      },
+      {
+        "name": "x-console-help",
+        "status": "PASS"
+      },
+      {
+        "name": "flash-plan",
+        "status": "PASS"
+      },
+      {
+        "name": "reset-plan",
+        "status": "PASS"
+      },
+      {
+        "name": "console-plan",
+        "status": "PASS"
+      },
+      {
+        "name": "build",
+        "status": "PASS"
+      },
+      {
+        "name": "firmware-layout",
+        "status": "PASS"
+      },
+      {
+        "name": "probes",
+        "status": "PASS"
+      },
+      {
+        "name": "flash",
+        "status": "PASS"
+      },
+      {
+        "name": "reset",
+        "status": "PASS"
+      },
+      {
+        "name": "console-0",
+        "status": "PASS"
+      },
+      {
+        "name": "console-1",
+        "status": "PASS"
+      },
+      {
+        "name": "real-tty-ctrlc-and-reopen",
+        "status": "PASS"
+      }
+    ],
+    "hardware": {
+      "flash": {
+        "status": "PASS",
+        "chip": "gd32f427ig",
+        "probe": "BC496BA027E9",
+        "attempts": [
+          {
+            "frequency": 100000,
+            "status": "PASS",
+            "verified": true,
+            "bytes": 169940
+          }
+        ]
+      },
+      "reset": {
+        "status": "PASS",
+        "chip": "gd32f427ig",
+        "probe": "BC496BA027E9",
+        "attempts": [
+          {
+            "frequency": 100000,
+            "status": "PASS"
+          }
+        ]
+      },
+      "consoleCtrlC": {
+        "status": "PASS",
+        "scope": [
+          "真实终端按行status()/ping",
+          "终端Ctrl+C退出",
+          "随后重新打开串口并完成ping及EOF退出"
+        ],
+        "ttyReceived": [
+          "STATUS board=KY3133-B00 chip=gd32f427ig cpu_hz=200000000 hxtal_hz=25000000 flash_kib=1024 console=uart3 baud=115200 uptime_ms=34869 heartbeat=34 reset=0x10000000",
+          "PONG published-tty-20261013"
+        ],
+        "ttyInterruptedExitCode": 1,
+        "reopenExitCode": 0
+      }
+    }
+  },
+  "scope": [
+    "保留远程同号发布约定和历史配方，不发布暂用Addon0.4.0",
+    "三个工具分支和v0.10.0/v0.1.0标签推送成功",
+    "实际工程公开模块、CLI帮助、三个action plan、build和firmware.layout",
+    "实际工程探针枚举、100kHz下载并物理读回169940bytes、复位",
+    "console实际STATUS/PONG、EOF退出、端口关闭重开",
+    "真实TTY按行输入、Ctrl+C退出、退出后重新打开COM23并ping"
+  ],
+  "limitations": [
+    "没有验证真实Linux设备、其他芯片/速率、控制线电气和人工上电",
+    "当前工程原有cmlib/MSP来源不在本次更新范围，本结果不代表所有源码包的全新环境安装"
+  ],
+  "evidence": {
+    "project": "/mnt/wsl/share/project/kunyi/fpga/ky3134/ky3133/b00-test/mcu/build/x-addon-release-evidence",
+    "sourceChecks": "/tmp/ky3133-xdtc-publish-tests.log",
+    "addonRegression": "/tmp/ky3133-addon-release-regression",
+    "fixedRecipes": "/tmp/ky3133-device-addon-release-fixed"
+  }
+}

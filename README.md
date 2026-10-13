@@ -146,3 +146,5 @@ xdtc `0.2.2` 固定源码 `c365c23`（工具 v0.8.1），新增 `xdtc_config(fil
 xdtc `0.3.0` 固定源码 `1953d42`（工具 v0.9.0），run 和 action 入口统一改为 `main(data, api, ...)`。脚本能力作为第二个参数传入，命令位置参数从第三个参数开始；旧脚本接收位置参数时需要调整签名。api.template.render/render_file 复用既有模板引擎，返回字符串，是否渲染与写文件由脚本决定；文件模板相对当前脚本目录。源码 69 项与隔离真实配方安装 18 项回归通过，见 [脚本 API 验证](tests/validation-xdtc-script-api.json)。
 
 2026-10-10，将分发版本统一为 xdtc `0.9.0`、xspm `0.3.0`、cautest `0.6.1`，均固定已有源码发布提交，运行时行为不变。19 项隔离安装与消费测试通过，见 [版本统一验证](tests/validation-version-alignment.json)。旧配方与历史验证记录保留。
+
+2026-10-13 按已有同号发布约定发布 xdtc `0.10.0` 和 x-pyocd/x-console `0.1.0`。此前设备插件记录中的 xdtc Addon `0.4.0` 仅用于本地开发，未发布该配方。源码与固定配方验证后已推送，实际 MCU 工程从远程安装并更新工具锁，完成构建、布局、实板下载读回、复位和串口验收，见 [发布与实际工程接入验证](tests/validation-device-addons-release.json)。
