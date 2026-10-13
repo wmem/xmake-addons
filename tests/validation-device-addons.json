@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-13",
+  "status": "PASS",
+  "versions": {
+    "xdtc": {
+      "addon": "0.4.0",
+      "tool": "0.10.0"
+    },
+    "x-pyocd": {
+      "addon": "0.1.0"
+    },
+    "x-console": {
+      "addon": "0.1.0"
+    }
+  },
+  "environment": {
+    "host": "Linux/WSL",
+    "deviceHost": "Windows",
+    "xmake": "3.1.1+HEAD.3ba37a0"
+  },
+  "offline": {
+    "xdtcChecks": 72,
+    "pyocdLuaGroups": 11,
+    "pyocdPythonTests": 11,
+    "consoleLuaGroups": 6,
+    "consolePtyTests": 4,
+    "consoleNodeTests": 14,
+    "existingAddonIntegrationTests": 19,
+    "deviceAddonIntegrationTests": 4,
+    "failures": 0,
+    "errors": 0
+  },
+  "scope": [
+    "script/select与entry/select互斥，entry提供独立API与位置参数，配置读取不执行entry",
+    "两个Addon的config合同、参数复制、后端错误传播与临时资源清理",
+    "pyOCD模拟编程、PT_LOAD读回、越界拒绝、频率重试与Linux探针锁",
+    "Linux真实PTY双向串口转发、Ctrl+C本地退出与termios恢复",
+    "Windows JSON RPC模拟错误、超时、EOF与SIGINT",
+    "隔离索引安装、公开模块导入、真实xdtc entry组合、CLI dry-run与资源完整性"
+  ],
+  "hardware": {
+    "status": "PASS",
+    "board": "KY3133-B00",
+    "chip": "gd32f427ig",
+    "probe": "BC496BA027E9",
+    "probeDescription": "wch.cn WCH-Link",
+    "frequencyHz": 100000,
+    "verifiedBytes": 169940,
+    "serialPort": "COM23",
+    "baudRate": 115200,
+    "scope": [
+      "新Addon探针枚举",
+      "隔离MCU构建及xdtc entry下载、物理逐段读回、复位",
+      "新console真实Windows SerialPort STATUS/PONG、关闭重开",
+      "xdtc entry启动按行console、STATUS/PONG、EOF退出"
+    ],
+    "evidence": "/mnt/wsl/share/project/kunyi/fpga/ky3134/ky3133/b00-test/mcu/build/x-addon-hardware-evidence",
+    "fixedRecipeCurrentFirmware": {
+      "status": "PASS",
+      "verifiedBytes": 169940,
+      "scope": [
+        "原始配方的固定提交隔离安装",
+        "xdtc entry下载当前MCU工作区固件并物理实读校验",
+        "新console CLI STATUS/PONG及EOF退出"
+      ],
+      "evidence": "/mnt/wsl/share/project/kunyi/fpga/ky3134/ky3133/b00-test/mcu/build/x-addon-hardware-evidence/current/result.json"
+    }
+  },
+  "notVerified": [
+    "Linux实际探针和物理串口",
+    "Windows Ctrl+C及控制线电气变化",
+    "其他芯片、速率与长期稳定性",
+    "人工断电上电",
+    "远程发布与全局升级"
+  ],
+  "evidence": {
+    "xdtc": "/tmp/ky3133-xdtc-entry-tests.log",
+    "existingAddons": "/tmp/ky3133-addon-regression-evidence",
+    "deviceAddons": "/tmp/ky3133-device-addon-install-evidence",
+    "mcu": "/mnt/wsl/share/project/kunyi/fpga/ky3134/ky3133/b00-test/mcu/build/x-addon-hardware-evidence"
+  },
+  "sourceCommits": {
+    "xdtc": "59e013d8aeed3cca05ee69c834453f9b929c78d9",
+    "x-pyocd": "0c3bfa03af056b441036b51a43b5b69f473faada",
+    "x-console": "eefa744e7132aaa0c51f56c5da614b7349114948"
+  },
+  "fixedRecipeIntegration": {
+    "status": "PASS",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "evidence": "/tmp/ky3133-device-addon-fixed-evidence"
+  }
+}

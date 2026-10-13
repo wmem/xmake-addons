@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.3.0", "cautest": "0.1.4", "xspm": "0.1.1"}[tool]
+            version = {"xdtc": "0.4.0", "cautest": "0.1.4", "xspm": "0.1.1"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -148,7 +148,7 @@ class AddonTests(unittest.TestCase):
     add_rules("@addon/xdtc/codegen")
     on_run(function()
         local generator = import("@addon.xdtc.generator")
-        assert(generator.version() == "0.9.0")
+        assert(generator.version() == "0.10.0")
     end)
 """)
         (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')

@@ -1,37 +1,54 @@
 # Xmake Addon 分发索引
 
-本仓库管理 xdtc、xspm 和 cautest 的分发配方。工具源码、命令入口和安装准备逻辑留在各自 Git 仓库；索引只记录来源、分发版本和固定源码提交。源码包 cmlib、gd32f4xx 继续由 xspm 管理，不属于本索引。
+本仓库管理 xdtc、xspm、cautest、x-pyocd 和 x-console 的分发配方。工具源码、命令入口和安装准备逻辑留在各自 Git 仓库；索引只记录来源、分发版本和固定源码提交。源码包 cmlib、gd32f4xx 继续由 xspm 管理，不属于本索引。
 
 | Addon | 安装后命令 | 默认配置 |
 | --- | --- | --- |
 | xdtc | `xmake xdtc` | `xdtc.lua` |
 | xspm | `xmake xspm` | `xspm.json` |
 | cautest | `xmake ctest` | `ctest.lua` |
+| x-pyocd | `xmake x-pyocd` | 无，显式传入 `--config=<JSON>` |
+| x-console | `xmake x-console` | 无，显式传入 `--config=<JSON>` |
 
-三个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
+五个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。x-pyocd/x-console 不解析板描述，执行系统、速率、芯片、端口及运行命令等所需参数由 config 提供。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
+
+当前新增 xdtc Addon **0.4.0**（工具源码 **v0.10.0**）及 x-pyocd/x-console **0.1.0**。三者均处于本地开发与验证阶段，尚未远程发布；版本化远程安装仍需推送工具源码提交和索引。现有发布版本的历史验证记录保留在下文。
 
 ## 安装与开发
 
 需要支持 Addon 的 Xmake；当前验证环境为 Linux x86_64、Xmake `3.1.1+HEAD.3ba37a0`。不能仅凭 `3.1.1` 版本号判断其他构建是否支持 Addon，应检查 `xmake addon --help`。cautest 安装还需要已有 Node >=20.6 和 npm，以及 npm lock 对应依赖的缓存或网络；配方不会安装系统 Node、npm 或全局 TypeScript。
 
-消费工程直接声明插件，配置与构建时由 Xmake 安装，无需项目初始化任务：
+新版本完成源码提交、配方固定与远程发布后，消费工程可直接声明插件，配置与构建时由 Xmake 安装，无需项目初始化任务：
 
 ```lua
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
-add_addons("xdtc 0.3.x", "xspm 0.1.x", "cautest 0.1.x")
+add_addons("xdtc 0.4.0", "x-pyocd 0.1.0", "x-console 0.1.0",
+    "xspm 0.1.x", "cautest 0.1.x")
 ```
 
-提交工程生成的 `xmake-addons.lock` 固定分发版本。
+提交工程生成的 `xmake-addons.lock` 固定分发版本。当前仍消费 xdtc 0.3.x 的工程可以保留原声明；该版本没有 action `entry`。
 
-首次远程分发需要先推送工具实现提交及索引。发布前可以注册本地索引，并用 `XMAKE_ADDON_SOURCE_ROOT` 指定包含三个工具 Git 仓库的目录：
+x-pyocd 与 x-console 分别提供可导入的 `@addon.x-pyocd.api` 与 `@addon.x-console.api`。xdtc 0.4.0 的 action 可声明 `{entry, select}`，直接调用这两个模块，无需工程转发脚本；已有 `{script, select}` 继续支持，两种入口互斥。配置读取接口只读取输入，不调用 entry。完整参数与平台依赖见 [x-pyocd README](https://github.com/wmem/x-pyocd)、[x-console README](https://github.com/wmem/x-console)；action 接口见 [xdtc 使用文档](https://github.com/wmem/xdtc/blob/master/docs/USAGE.md#action-输入)。
+
+首次远程分发需要先推送工具实现提交及索引。对已经固定有效源码提交的配方，可注册本地索引，并用 `XMAKE_ADDON_SOURCE_ROOT` 指定包含工具 Git 仓库的目录：
 
 ```sh
 xmake repo --add --global kunyi /path/to/xmake-addons-repo
 XMAKE_ADDON_SOURCE_ROOT=/path/to/code/xmake \
-  xmake addon --install kunyi@xdtc kunyi@xspm kunyi@cautest
+  xmake addon --install kunyi@xdtc kunyi@x-pyocd kunyi@x-console kunyi@xspm kunyi@cautest
 ```
 
 本地来源同样按配方固定提交检出，未提交修改不会参与安装；可以直接从工作副本运行准备脚本来验证未提交修改。远程索引发布后，省略 `XMAKE_ADDON_SOURCE_ROOT`，并将本地索引路径替换为 `https://github.com/wmem/xmake-addons.git`。安装通过 Xmake 索引完成；cautest 的配方执行 `npm ci --ignore-scripts`、`npm run build`，只安装生成的 JS 和必要资源，日常测试不重新编译 TS。开发阶段直接从工具原始目录或 Git URL 安装不会执行配方，应先运行各工具的 `scripts/prepare-addon.lua` 准备完整目录。
+
+上面的索引安装命令需要所选版本已经有有效提交号。验证工作副本时，可在各自仓库根目录准备为完整 Addon，再安装到开发专用环境，例如：
+
+```sh
+# 在 x-pyocd 仓库根目录执行；输出目录须尚不存在。
+xmake lua scripts/prepare-addon.lua /tmp/x-pyocd-addon-stage
+xmake addon --install /tmp/x-pyocd-addon-stage
+```
+
+x-console 与 xdtc 使用相同准备流程。隔离验证应使用临时 `XMAKE_GLOBALDIR`，避免覆盖工程当前已安装的 xdtc 0.3.x。插件安装不会自动安装 Python、pyOCD、Node.js 或 PowerShell。
 
 Addon 分发版本单独维护，首版为 `0.1.0`，不改变各工具现有内部版本或 Cautest 协议版本。每个配方的 `add_versions()` 固定完整源码提交，不跟随浮动分支。发布新版时先完成工具验证与提交，再更新配方版本及提交。xdtc `0.1.1` 另提供 `@addon/xdtc/codegen` 规则及 `@addon.xdtc.generator` 模块，
 复用核心生成 API。规则仅在内容变化时写入输出，具体接入见工具 README。
@@ -46,6 +63,30 @@ ADDON_TEST_EVIDENCE=/tmp/addon-test-evidence \
 测试把当前三个工具的源码快照保存为本地 Git 提交，通过本地来源选项选择测试源码，仅替换配方中的提交号，实际执行索引安装流程。所有插件安装、仓库登记和包缓存使用临时 `XMAKE_GLOBALDIR`；不会改动用户的全局插件目录。npm 使用离线模式，缓存缺失会报错，不跳过或自动安装系统工具。
 
 覆盖默认与指定配置、空格和中文路径、外部目录的 `-P`、真实文件生成、命名空间生成规则与模块、输出增量和缺失恢复、Git 源码包同步、Native C 测试成功和失败退出码、错误配置、原有 RC 保留、TS 准备失败后重试、拒绝覆盖及卸载。测试不是远程发布验证，也不访问 MCU 板卡。
+
+新设备插件的隔离验证由 [test_device_addons.py](tests/test_device_addons.py) 独立执行：
+
+```sh
+DEVICE_ADDON_TEST_EVIDENCE=/tmp/device-addon-test-evidence \
+  uv run --no-project python tests/test_device_addons.py
+```
+
+该测试把 xdtc、x-pyocd、x-console 当前工作副本保存为临时 Git 快照，仅在临时索引中把配方提交替换为快照提交；用户全局插件和原始配方不被覆盖。当前包含四项检查：
+
+| 检查 | 实际范围 |
+| --- | --- |
+| 安装载荷和公开导入 | 真实索引安装后的命令入口、模块导入、xdtc 版本与 execute_entry |
+| entry 组合调用及只读 | entry 导入两插件、中文和空格路径、模板资源基准、位置参数与 read_action_config 不执行入口 |
+| CLI 配置检查与失败传播 | x-console dry-run、错误配置及 entry 异常导致非零退出 |
+| 后端资源完整性 | 安装制品包含 Python、Node.js 和 PowerShell 所需运行资源 |
+
+2026-10-13 的本地快照验证中，上述四项全部通过，0 failure、0 error；版本、范围与结果见 [设备插件接入验证](tests/validation-device-addons.json)。重新运行可用上面的 evidence 参数保留结果和命令日志；本地验证记录不代表远程版本已经发布。
+
+设置 `DEVICE_ADDON_FIXED_SOURCES=1` 可改为验证原始配方中的固定提交，测试只克隆本地工具仓库，不替换提交号。2026-10-13 的固定提交安装同样通过上述四项检查。
+
+插件自身另有 Lua 配置合同、模拟 pyOCD 编程/读回/重试/锁、Linux 伪终端交互及 Windows JSON 传输模拟测试，运行方法见各插件 README。隔离安装和模拟测试不访问实际 MCU；离线检查不能替代 Windows 实板下载、真实串口交互或远程发布验证。
+
+同日另在 KY3133-B00 完成 Windows via WSL 实板验证：通过新插件和 xdtc entry 下载、逐段实读校验、复位，检查 COM23 STATUS/PONG、关闭重开及按行 console 的 EOF 退出。最后一轮使用固定提交配方和当前 MCU 工作区固件；硬件范围、证据及未覆盖项同样记录在上述验证文件中。
 
 2026-10-05 在上述本机环境执行验证：9 项插件集成测试通过；原有 xdtc 的 6 个套件、35 项检查，xspm 的完整测试及 Cautest 的 15 项相关测试通过。此外，当前配方已用真实工具仓库的固定提交完成隔离安装，并运行三个命令及 Native 测试。版本、范围和结果见 [验证记录](tests/validation.json)。远程发布和用户全局安装未执行。
 
