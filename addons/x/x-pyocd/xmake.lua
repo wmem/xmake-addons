@@ -4,7 +4,7 @@ set_homepage("https://github.com/wmem/x-pyocd")
 set_description("显式配置的 pyOCD 下载和调试工具")
 set_license("MIT")
 add_urls("git@github.com:wmem/x-pyocd.git")
-add_versions("0.1.0", "0c3bfa03af056b441036b51a43b5b69f473faada")
+add_versions("0.1.0", "e8cd289556acf10188635920b60b1be9206dcc40")
 on_load(function(package)
     local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
     if root then

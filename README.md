@@ -12,23 +12,23 @@
 
 五个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。x-pyocd/x-console 不解析板描述，执行系统、速率、芯片、端口及运行命令等所需参数由 config 提供。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
 
-当前新增 xdtc Addon **0.4.0**（工具源码 **v0.10.0**）及 x-pyocd/x-console **0.1.0**。三者均处于本地开发与验证阶段，尚未远程发布；版本化远程安装仍需推送工具源码提交和索引。现有发布版本的历史验证记录保留在下文。
+当前新增 xdtc **0.10.0** 及 x-pyocd/x-console **0.1.0**，xdtc Addon 与工具源码发布版本相同。现有发布版本的历史验证记录保留在下文。
 
 ## 安装与开发
 
 需要支持 Addon 的 Xmake；当前验证环境为 Linux x86_64、Xmake `3.1.1+HEAD.3ba37a0`。不能仅凭 `3.1.1` 版本号判断其他构建是否支持 Addon，应检查 `xmake addon --help`。cautest 安装还需要已有 Node >=20.6 和 npm，以及 npm lock 对应依赖的缓存或网络；配方不会安装系统 Node、npm 或全局 TypeScript。
 
-新版本完成源码提交、配方固定与远程发布后，消费工程可直接声明插件，配置与构建时由 Xmake 安装，无需项目初始化任务：
+消费工程可直接声明插件，配置与构建时由 Xmake 安装，无需项目初始化任务：
 
 ```lua
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
-add_addons("xdtc 0.4.0", "x-pyocd 0.1.0", "x-console 0.1.0",
-    "xspm 0.1.x", "cautest 0.1.x")
+add_addons("xdtc 0.10.0", "x-pyocd 0.1.0", "x-console 0.1.0",
+    "xspm 0.3.x", "cautest 0.6.x")
 ```
 
-提交工程生成的 `xmake-addons.lock` 固定分发版本。当前仍消费 xdtc 0.3.x 的工程可以保留原声明；该版本没有 action `entry`。
+提交工程生成的 `xmake-addons.lock` 固定分发版本。当前仍消费 xdtc 0.9.x 的工程需要升级到 0.10.x 才能使用 action `entry`。旧配方保留供历史锁文件复现。
 
-x-pyocd 与 x-console 分别提供可导入的 `@addon.x-pyocd.api` 与 `@addon.x-console.api`。xdtc 0.4.0 的 action 可声明 `{entry, select}`，直接调用这两个模块，无需工程转发脚本；已有 `{script, select}` 继续支持，两种入口互斥。配置读取接口只读取输入，不调用 entry。完整参数与平台依赖见 [x-pyocd README](https://github.com/wmem/x-pyocd)、[x-console README](https://github.com/wmem/x-console)；action 接口见 [xdtc 使用文档](https://github.com/wmem/xdtc/blob/master/docs/USAGE.md#action-输入)。
+x-pyocd 与 x-console 分别提供可导入的 `@addon.x-pyocd.api` 与 `@addon.x-console.api`。xdtc 0.10.0 的 action 可声明 `{entry, select}`，直接调用这两个模块，无需工程转发脚本；已有 `{script, select}` 继续支持，两种入口互斥。配置读取接口只读取输入，不调用 entry。完整参数与平台依赖见 [x-pyocd README](https://github.com/wmem/x-pyocd)、[x-console README](https://github.com/wmem/x-console)；action 接口见 [xdtc 使用文档](https://github.com/wmem/xdtc/blob/master/docs/USAGE.md#action-输入)。
 
 首次远程分发需要先推送工具实现提交及索引。对已经固定有效源码提交的配方，可注册本地索引，并用 `XMAKE_ADDON_SOURCE_ROOT` 指定包含工具 Git 仓库的目录：
 
@@ -48,10 +48,11 @@ xmake lua scripts/prepare-addon.lua /tmp/x-pyocd-addon-stage
 xmake addon --install /tmp/x-pyocd-addon-stage
 ```
 
-x-console 与 xdtc 使用相同准备流程。隔离验证应使用临时 `XMAKE_GLOBALDIR`，避免覆盖工程当前已安装的 xdtc 0.3.x。插件安装不会自动安装 Python、pyOCD、Node.js 或 PowerShell。
+x-console 与 xdtc 使用相同准备流程。隔离验证应使用临时 `XMAKE_GLOBALDIR`，避免覆盖工程当前已安装的插件。插件安装不会自动安装 Python、pyOCD、Node.js 或 PowerShell。
 
-Addon 分发版本单独维护，首版为 `0.1.0`，不改变各工具现有内部版本或 Cautest 协议版本。每个配方的 `add_versions()` 固定完整源码提交，不跟随浮动分支。发布新版时先完成工具验证与提交，再更新配方版本及提交。xdtc `0.1.1` 另提供 `@addon/xdtc/codegen` 规则及 `@addon.xdtc.generator` 模块，
-复用核心生成 API。规则仅在内容变化时写入输出，具体接入见工具 README。
+Addon 版本与工具源码发布版本统一：当前 xdtc 为 `0.10.0`、xspm 为 `0.3.0`、cautest 为 `0.6.1`，x-pyocd 与 x-console 为 `0.1.0`。每个配方的 `add_versions()` 固定对应源码发布提交，不跟随浮动分支；Cautest 的 C API 版本仍独立维护。发布新版时先完成工具验证、提交和标签，再发布同号配方。仅文档修改不改变运行时版本。
+
+此前采用独立的 Addon 版本号，旧配方保留供历史锁文件复现。迁移时修改 `add_addons()` 为上面的版本范围，再在消费工程执行 `xmake addon --upgrade -y`，提交更新后的 `xmake-addons.lock`。`xmake addon --list` 可查看全局活动版本；安装新版本后应确认 `xmake ctest --help` 默认配置为 `ctest.lua`，避免继续使用此前撤回的 `0.1.5` 入口。
 
 ## 验证
 
@@ -116,7 +117,7 @@ Cautest `0.1.4` 配方固定源码 `c2e5782`（工具内部版本 0.6.1，C API 
 
 工具源码和新索引推送后，消费工程执行 `xmake addon --upgrade`，由 Xmake 更新已安装插件及
 `xmake-addons.lock`。有独立 Addon lock 的消费工程需要分别升级；
-只修改工具源码不会改变已经安装的命令，`cautest 0.1.x` 声明本身无需改变。
+只修改工具源码不会改变已经安装的命令，`cautest 0.6.x` 声明本身无需改变。
 
 xspm `0.1.1` 配方固定源码 `f4a6133`（工具版本 v0.3.0），支持顶层 `xspm.json`
 的 `package` 指定所有依赖的本地开发分支；同步保护额外本地提交，源码 ref 与 lock 继续固定版本。
@@ -143,3 +144,5 @@ xdtc `0.2.2` 固定源码 `c365c23`（工具 v0.8.1），新增 `xdtc_config(fil
 
 
 xdtc `0.3.0` 固定源码 `1953d42`（工具 v0.9.0），run 和 action 入口统一改为 `main(data, api, ...)`。脚本能力作为第二个参数传入，命令位置参数从第三个参数开始；旧脚本接收位置参数时需要调整签名。api.template.render/render_file 复用既有模板引擎，返回字符串，是否渲染与写文件由脚本决定；文件模板相对当前脚本目录。源码 69 项与隔离真实配方安装 18 项回归通过，见 [脚本 API 验证](tests/validation-xdtc-script-api.json)。
+
+2026-10-10，将分发版本统一为 xdtc `0.9.0`、xspm `0.3.0`、cautest `0.6.1`，均固定已有源码发布提交，运行时行为不变。19 项隔离安装与消费测试通过，见 [版本统一验证](tests/validation-version-alignment.json)。旧配方与历史验证记录保留。
