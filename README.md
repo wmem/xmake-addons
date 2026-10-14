@@ -1,6 +1,6 @@
 # Xmake Addon 分发索引
 
-本仓库管理 xdtc、xspm、cautest、x-pyocd 和 x-console 的分发配方。工具源码、命令入口和安装准备逻辑留在各自 Git 仓库；索引只记录来源、分发版本和固定源码提交。源码包 cmlib、gd32f4xx 继续由 xspm 管理，不属于本索引。
+本仓库管理 xdtc、xspm、cautest、x-pyocd、x-console 和 x-firmware 的分发配方。工具源码、命令入口和安装准备逻辑留在各自 Git 仓库；索引只记录来源、分发版本和固定源码提交。源码包 cmlib、gd32f4xx 继续由 xspm 管理，不属于本索引。
 
 | Addon | 安装后命令 | 默认配置 |
 | --- | --- | --- |
@@ -9,12 +9,15 @@
 | cautest | `xmake ctest` | `ctest.lua` |
 | x-pyocd | `xmake x-pyocd` | 无，显式传入 `--config=<JSON>` |
 | x-console | `xmake x-console` | 无，显式传入 `--config=<JSON>` |
+| x-firmware | `xmake x-firmware` | 无，显式传入 `--config=<JSON>` |
 
-五个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。x-pyocd/x-console 不解析板描述，执行系统、速率、芯片、端口及运行命令等所需参数由 config 提供。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
+六个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。x-pyocd/x-console 不解析板描述，执行系统、速率、芯片、端口及运行命令等所需参数由 config 提供。x-firmware 的文件路径相对 JSON 所在目录，提供 app/upgrade/diff/inspect/product 操作。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
 
 当前 xdtc 为 **0.10.0**、x-pyocd 为 **0.1.1**、x-console 为 **0.1.0**。x-pyocd 0.1.1 增加独立 readback 操作及 backend() 测试桥接接口，源码 13 组 API、14 项后端检查以及 KY3133-B00 实板下载/复位/读回验证通过。Addon 与工具源码发布版本相同，历史配方和验证记录保留在下文。
 
 ## 安装与开发
+
+x-firmware **0.1.0** 的文件 API、共享固件/产品头和纯 Lua LZ4/bsdiff 不依赖算法二进制。源码验证包括 C/Lua 格式互通、26 组独立 C 算法双向互通，以及真实隔离安装、API/规则/命令和增量处理；本索引配方的固定源码安装也已通过同一消费工程。详细接口和测试入口见 [x-firmware README](https://github.com/wmem/x-firmware)，固定源提交由 [配方](addons/x/x-firmware/xmake.lua)维护。
 
 需要支持 Addon 的 Xmake；当前验证环境为 Linux x86_64、Xmake `3.1.1+HEAD.3ba37a0`。不能仅凭 `3.1.1` 版本号判断其他构建是否支持 Addon，应检查 `xmake addon --help`。cautest 安装还需要已有 Node >=20.6 和 npm，以及 npm lock 对应依赖的缓存或网络；配方不会安装系统 Node、npm 或全局 TypeScript。
 
@@ -24,6 +27,7 @@
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
 add_addons("xdtc 0.10.0", "x-pyocd 0.1.1", "x-console 0.1.0",
     "xspm 0.3.x", "cautest 0.6.x")
+add_addons("x-firmware 0.1.0")
 ```
 
 提交工程生成的 `xmake-addons.lock` 固定分发版本。当前仍消费 xdtc 0.9.x 的工程需要升级到 0.10.x 才能使用 action `entry`。旧配方保留供历史锁文件复现。
