@@ -13,7 +13,7 @@
 
 六个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。x-pyocd/x-console 不解析板描述，执行系统、速率、芯片、端口及运行命令等所需参数由 config 提供。x-firmware 的文件路径相对 JSON 所在目录，提供 app/upgrade/diff/inspect/product 操作。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
 
-当前 xdtc 为 **0.10.0**、x-pyocd 为 **0.1.1**、x-console 为 **0.1.0**。x-pyocd 0.1.1 增加独立 readback 操作及 backend() 测试桥接接口，源码 13 组 API、14 项后端检查以及 KY3133-B00 实板下载/复位/读回验证通过。Addon 与工具源码发布版本相同，历史配方和验证记录保留在下文。
+当前 xdtc 为 **0.11.0**、x-pyocd 为 **0.2.0**、x-console 为 **0.1.0**、x-firmware 为 **0.2.0**。xdtc 数据接口统一使用 `xdtc_` 前缀，不再提供裸名或 `updateRoot` 别名。Addon 与工具源码发布版本相同，历史配方和验证记录保留在下文。
 
 ## 安装与开发
 
@@ -25,14 +25,14 @@ x-firmware **0.1.0** 的文件 API、共享固件/产品头和纯 Lua LZ4/bsdiff
 
 ```lua
 add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
-add_addons("xdtc 0.10.0", "x-pyocd 0.1.1", "x-console 0.1.0",
-    "xspm 0.3.x", "cautest 0.6.x")
-add_addons("x-firmware 0.1.0")
+add_addons("xdtc 0.11.0", "x-pyocd 0.2.0", "x-console 0.1.0",
+    "xspm 0.3.0", "cautest 0.6.1")
+add_addons("x-firmware 0.2.0")
 ```
 
-提交工程生成的 `xmake-addons.lock` 固定分发版本。当前仍消费 xdtc 0.9.x 的工程需要升级到 0.10.x 才能使用 action `entry`。旧配方保留供历史锁文件复现。
+插件声明使用明确的完整版本，工程提交 `xmake-addons.lock` 同时固定版本和索引提交。升级 xdtc 0.11.0 时，须同步更新数据脚本和所引用组件中的 DSL 调用；旧裸名不再有效。旧配方保留供历史锁文件复现。
 
-x-pyocd 与 x-console 分别提供可导入的 `@addon.x-pyocd.api` 与 `@addon.x-console.api`。xdtc 0.10.0 的 action 可声明 `{entry, select}`，直接调用这两个模块，无需工程转发脚本；已有 `{script, select}` 继续支持，两种入口互斥。配置读取接口只读取输入，不调用 entry。完整参数与平台依赖见 [x-pyocd README](https://github.com/wmem/x-pyocd)、[x-console README](https://github.com/wmem/x-console)；action 接口见 [xdtc 使用文档](https://github.com/wmem/xdtc/blob/master/docs/USAGE.md#action-输入)。
+x-pyocd 与 x-console 分别提供可导入的 `@addon.x-pyocd.api` 与 `@addon.x-console.api`。xdtc 0.11.0 的 action 可声明 `{entry, select}`，直接调用这两个模块，无需工程转发脚本；已有 `{script, select}` 继续支持，两种入口互斥。配置读取接口只读取输入，不调用 entry。完整参数与平台依赖见 [x-pyocd README](https://github.com/wmem/x-pyocd)、[x-console README](https://github.com/wmem/x-console)；action 接口见 [xdtc 使用文档](https://github.com/wmem/xdtc/blob/master/docs/USAGE.md#action-输入)。
 
 首次远程分发需要先推送工具实现提交及索引。对已经固定有效源码提交的配方，可注册本地索引，并用 `XMAKE_ADDON_SOURCE_ROOT` 指定包含工具 Git 仓库的目录：
 
@@ -54,11 +54,13 @@ xmake addon --install /tmp/x-pyocd-addon-stage
 
 x-console 与 xdtc 使用相同准备流程。隔离验证应使用临时 `XMAKE_GLOBALDIR`，避免覆盖工程当前已安装的插件。插件安装不会自动安装 Python、pyOCD、Node.js 或 PowerShell。
 
-Addon 版本与工具源码发布版本统一：当前 xdtc 为 `0.10.0`、xspm 为 `0.3.0`、cautest 为 `0.6.1`、x-pyocd 为 `0.1.1`、x-console 为 `0.1.0`。每个配方的 `add_versions()` 固定对应源码发布提交，不跟随浮动分支；Cautest 的 C API 版本仍独立维护。发布新版时先完成工具验证、提交和标签，再发布同号配方。仅文档修改不改变运行时版本。
+Addon 版本与工具源码发布版本统一：当前 xdtc 为 `0.11.0`、xspm 为 `0.3.0`、cautest 为 `0.6.1`、x-pyocd 为 `0.2.0`、x-console 为 `0.1.0`。每个配方的 `add_versions()` 固定对应源码发布提交，不跟随浮动分支；Cautest 的 C API 版本仍独立维护。发布新版时先完成工具验证、提交和标签，再发布同号配方。仅文档修改不改变运行时版本。
 
-此前采用独立的 Addon 版本号，旧配方保留供历史锁文件复现。迁移时修改 `add_addons()` 为上面的版本范围，再在消费工程执行 `xmake addon --upgrade -y`，提交更新后的 `xmake-addons.lock`。`xmake addon --list` 可查看全局活动版本；安装新版本后应确认 `xmake ctest --help` 默认配置为 `ctest.lua`，避免继续使用此前撤回的 `0.1.5` 入口。
+此前采用独立的 Addon 版本号，旧配方保留供历史锁文件复现。迁移时修改 `add_addons()` 为上面的明确版本，再在消费工程执行 `xmake addon --upgrade -y`，提交更新后的 `xmake-addons.lock`。`xmake addon --list` 可查看全局活动版本；安装新版本后应确认 `xmake ctest --help` 默认配置为 `ctest.lua`，避免继续使用此前撤回的 `0.1.5` 入口。
 
 ## 验证
+
+2026-10-18 的 xdtc 0.11.0 前缀接口迁移已通过工具十个套件、74项检查，索引19项隔离安装回归，以及4项固定源码设备插件接入检查。覆盖所有七个前缀接口、普通函数重名、旧别名移除和跨插件entry；[验证摘要](tests/validation-xdtc-prefix.json)明确区分本地验证与远程发布，未访问硬件。
 
 ```sh
 ADDON_TEST_EVIDENCE=/tmp/addon-test-evidence \
@@ -121,7 +123,7 @@ Cautest `0.1.4` 配方固定源码 `c2e5782`（工具内部版本 0.6.1，C API 
 
 工具源码和新索引推送后，消费工程执行 `xmake addon --upgrade`，由 Xmake 更新已安装插件及
 `xmake-addons.lock`。有独立 Addon lock 的消费工程需要分别升级；
-只修改工具源码不会改变已经安装的命令，`cautest 0.6.x` 声明本身无需改变。
+只修改工具源码不会改变已经安装的命令，`cautest 0.6.1` 声明本身无需改变。
 
 xspm `0.1.1` 配方固定源码 `f4a6133`（工具版本 v0.3.0），支持顶层 `xspm.json`
 的 `package` 指定所有依赖的本地开发分支；同步保护额外本地提交，源码 ref 与 lock 继续固定版本。

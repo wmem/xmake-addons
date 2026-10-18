@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-18",
+  "status": "PASS",
+  "versions": {
+    "xdtc": "0.11.0",
+    "x-pyocd": "0.2.0",
+    "x-console": "0.1.0",
+    "xspm": "0.3.0",
+    "cautest": "0.6.1"
+  },
+  "sourceCommit": "06463cb2ccaf55b7ce1759f58c2a39fce0d9a7c3",
+  "regression": {
+    "xdtcSuites": 10,
+    "xdtcChecks": 74,
+    "addonTests": 19,
+    "fixedRecipeDeviceAddonTests": 4,
+    "failures": 0,
+    "errors": 0
+  },
+  "scope": [
+    "七个xdtc_数据接口及旧裸名/updateRoot别名移除",
+    "脚本普通函数重名、相对include、数据文件环境和进程全局隔离",
+    "真实隔离索引安装和生成规则，包含七个前缀接口的消费配置",
+    "固定源码配方安装、跨插件entry和资源完整性"
+  ],
+  "hardwareVerified": false,
+  "remotePublished": false,
+  "evidence": "MCU工程本地build/xdtc-prefix-20261018，日志不属于发布制品"
+}

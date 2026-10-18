@@ -10,7 +10,7 @@ import unittest
 
 INDEX = Path(__file__).resolve().parents[1]
 TOOLS = INDEX.parent
-VERSIONS = {"xdtc": "0.10.0", "x-pyocd": "0.1.1", "x-console": "0.1.0"}
+VERSIONS = {"xdtc": "0.11.0", "x-pyocd": "0.2.0", "x-console": "0.1.0"}
 
 
 class DeviceAddonTests(unittest.TestCase):
@@ -81,7 +81,7 @@ class DeviceAddonTests(unittest.TestCase):
 local terminal=import("@addon.x-console.api",{anonymous=true})
 local xdtc=import("@addon.xdtc.generator",{anonymous=true})
 assert(type(pyocd.flash)=="function" and type(terminal.open)=="function")
-assert(xdtc.version()=="0.10.0" and type(xdtc.execute_entry)=="function")'''
+assert(xdtc.version()=="0.11.0" and type(xdtc.execute_entry)=="function")'''
         self.run_command(["xmake", "lua", "-c", script], cwd=self.consumer)
 
     def test_02_entry_imports_addons_and_reads_without_execution(self):

@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.10.0", "cautest": "0.6.1", "xspm": "0.3.0"}[tool]
+            version = {"xdtc": "0.11.0", "cautest": "0.6.1", "xspm": "0.3.0"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -149,10 +149,19 @@ class AddonTests(unittest.TestCase):
     add_rules("@addon/xdtc/codegen")
     on_run(function()
         local generator = import("@addon.xdtc.generator")
-        assert(generator.version() == "0.10.0")
+        assert(generator.version() == "0.11.0")
     end)
 """)
-        (consumer / "data.lua").write_text('return {sample={enable=true,match="value.tpl",value=42}}\n')
+        (consumer / "defaults.lua").write_text('return {sample={enable=true,match="value.tpl",obsolete=true}}')
+        (consumer / "data.lua").write_text('''assert(include==nil and get==nil and updateRoot==nil)
+local function get() return "user-get" end
+xdtc_include("defaults.lua")
+xdtc_replace("sample.value",20)
+xdtc_update("sample.value",42)
+xdtc_remove("sample.obsolete")
+xdtc_update_root({checked=true})
+assert(xdtc_get_root().checked and xdtc_get("sample").obsolete==nil and get()=="user-get")
+''')
         (consumer / "value.tpl").write_text('int value = {{ value }};\n')
         (consumer / "xdtc.lua").write_text('return {data="data.lua",tpl={{files={"value.tpl"},out="generated.c"}}}\n')
         self.exec(["xmake", "build", "-y"], cwd=consumer)
@@ -175,7 +184,7 @@ class AddonTests(unittest.TestCase):
         nested = consumer / "配置 空格"
         nested.mkdir()
         (nested / "defaults.lua").write_text('return {sample={enable=true,match="value.tpl"},number=1,values={1,2},disabled={enable=false}}')
-        (nested / "data.lua").write_text('local base=path.absolute("defaults.lua",os.scriptdir())\ninclude(base)\nreplace("values",{})\nreturn {number=42,serial={port="/dev/fixture"}}')
+        (nested / "data.lua").write_text('local base=path.absolute("defaults.lua",os.scriptdir())\nxdtc_include(base)\nxdtc_replace("values",{})\nreturn {number=42,serial={port="/dev/fixture"}}')
         (nested / "action.lua").write_text('''function main(config, api, marker)
     assert(config.number == 42 and config.name == nil and #config.values == 0)
     assert(config.disabled.enable == false and config.serial.port == "/dev/fixture")
