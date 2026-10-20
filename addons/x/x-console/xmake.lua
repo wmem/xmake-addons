@@ -5,6 +5,7 @@ set_description("显式配置的 Linux/Windows 串口终端")
 set_license("MIT")
 add_urls("git@github.com:wmem/x-console.git")
 add_versions("0.1.0", "c3cf6f3a61352a942dbbdbc008cf3980d94af8ed")
+add_versions("0.1.1", "356dca4450a00ad4b7688091681ac62e1d13fca6")
 on_load(function(package)
     local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
     if root then

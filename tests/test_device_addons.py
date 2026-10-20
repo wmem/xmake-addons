@@ -10,7 +10,7 @@ import unittest
 
 INDEX = Path(__file__).resolve().parents[1]
 TOOLS = INDEX.parent
-VERSIONS = {"xdtc": "0.11.0", "x-pyocd": "0.2.0", "x-console": "0.1.0"}
+VERSIONS = {"xdtc": "0.11.0", "x-pyocd": "0.2.0", "x-console": "0.1.1"}
 
 
 class DeviceAddonTests(unittest.TestCase):
@@ -116,6 +116,12 @@ assert(xdtc.read_action_config({json.dumps(str(nested / 'xdtc.lua'), ensure_asci
                        "stop_bits": 1, "flow_control": "none", "board_control": {}}}))
         result = self.run_command(["xmake", "x-console", "--config=" + str(file), "--dry-run"], cwd=self.consumer)
         self.assertIn('"baud_rate":9600', result.stdout.replace(" ", ""))
+        windows = json.loads(file.read_text())
+        windows.update(host="windows", runtime={"node": "node", "powershell": "unused", "wslpath": "unused"})
+        windows["serial"]["port"] = "COM23"
+        file.write_text(json.dumps(windows))
+        result = self.run_command(["xmake", "x-console", "--config=" + str(file), "--dry-run"], cwd=self.consumer)
+        self.assertIn('"mode":"raw"', result.stdout.replace(" ", ""))
         file.write_text('{"serial":{}}')
         result = self.run_command(["xmake", "x-console", "--config=" + str(file), "--dry-run"], cwd=self.consumer, expected=None)
         self.assertIn("host", result.stdout + result.stderr)
