@@ -65,7 +65,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.11.0", "cautest": "0.6.1", "xspm": "0.3.0"}[tool]
+            version = {"xdtc": "0.11.0", "cautest": "0.8.0", "xspm": "0.3.0"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
