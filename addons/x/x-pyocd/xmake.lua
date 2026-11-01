@@ -7,6 +7,7 @@ add_urls("git@github.com:wmem/x-pyocd.git")
 add_versions("0.1.0", "e8cd289556acf10188635920b60b1be9206dcc40")
 add_versions("0.1.1", "c4473f2e70ad236e334c740868dac3b9c563d5c2")
 add_versions("0.2.0", "96c944c038cc4019057b38720878d31a2beb7adf")
+add_versions("0.3.0", "220604cc042342fca2d5377270d547aab7423813")
 on_load(function(package)
     local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
     if root then
