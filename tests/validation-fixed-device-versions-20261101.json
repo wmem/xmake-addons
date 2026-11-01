@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "source": "remote GitHub only; no local Git URL rewrites or source overrides",
+  "index_url": "git@github.com:wmem/xmake-addons.git",
+  "index_commit": "c148913b1170d8df3a1c1fffaa1bf0a546b2c7a2",
+  "versions": {
+    "x-pyocd": "0.3.1",
+    "x-console": "0.2.0"
+  },
+  "native_lock_is_canonical": true,
+  "fresh_package_and_addon_cache": true,
+  "payload_equals_published_source": true,
+  "project_versions_survive_other_active_versions": true,
+  "project_json_entry_uses_exact_version": true,
+  "standalone_cli_follows_global_active": true,
+  "hardware_accessed": false,
+  "consumer": {
+    "repository": "git@gitlab.kunyi.local:board/ky3133/mcu.git",
+    "commit": "dfd8e2440b57edb2a44dfdb3e3ac2153d19418b7",
+    "entry": "scripts/build/pyocd-task.lua",
+    "regression": "tests/scripts/codegen/check_project_config.py",
+    "regression_run": "20261101055622449-f639e6f7"
+  },
+  "source_refs": {
+    "x-pyocd": {
+      "version": "0.3.1",
+      "tag": "v0.3.1",
+      "commit": "588270dcd89095d410afd2b34db84a4b172dd0d8"
+    },
+    "x-console": {
+      "version": "0.2.0",
+      "tag": "v0.2.0",
+      "commit": "2a05ede7aebf5a6bdc5cf3ab919e2d1d63e5e7c7"
+    }
+  },
+  "limitation": "Standalone global CLI selects the global active version; fixed project tasks/API are required."
+}

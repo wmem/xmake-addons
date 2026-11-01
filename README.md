@@ -17,6 +17,9 @@
 
 当前 cautest 为 **0.8.0**、xdtc 为 **0.11.0**、x-pyocd 为 **0.3.1**、x-console 为 **0.2.0**、x-firmware 为 **0.2.0**。xdtc 数据接口统一使用 `xdtc_` 前缀，不再提供裸名或 `updateRoot` 别名。Addon 与工具源码发布版本相同，历史配方和验证记录保留在下文。
 
+
+固定版本的使用范围见 [远端安装与版本选择验证](tests/validation-fixed-device-versions-20261101.json)：全新缓存从远端安装通过；全局激活其它版本时，工程任务导入的API仍遵守工程声明/锁文件。通用全局CLI按全局active版本执行，不读取工程锁；消费工程需要在项目任务内调用固定API。KY3133 MCU的已有JSON操作使用工程 `xmake pyocd`，正常烧录/串口仍使用工程 `xmake flash`／`xmake console`。
+
 ## 安装与开发
 
 x-firmware **0.1.0** 的文件 API、共享固件/产品头和纯 Lua LZ4/bsdiff 不依赖算法二进制。源码验证包括 C/Lua 格式互通、26 组独立 C 算法双向互通，以及真实隔离安装、API/规则/命令和增量处理；本索引配方的固定源码安装也已通过同一消费工程。详细接口和测试入口见 [x-firmware README](https://github.com/wmem/x-firmware)，固定源提交由 [配方](addons/x/x-firmware/xmake.lua)维护。
