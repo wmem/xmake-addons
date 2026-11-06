@@ -1,0 +1,16 @@
+{% section id="xmake-addons:use:reference:addons" title="Addon 与配方参考" %}
+
+配方按工具名记录分发版本及固定源码提交，当前精确值以源码配方为准。命令和业务配置由各工具维护：
+
+| Addon | 配方 | 安装后命令 | 默认配置 | 工具手册 |
+| --- | --- | --- | --- | --- |
+| xdtc | [xdtc](../../development/sources.mdoc#xmake-addons:source:addons:x:xdtc:xmake:lua) | xmake xdtc | xdtc.lua | {% page project="xdtc" id="docs/index" label="xdtc" /%} |
+| xspm | [xspm](../../development/sources.mdoc#xmake-addons:source:addons:x:xspm:xmake:lua) | xmake xspm | xspm.json | {% page project="xspm" id="docs/index" label="xspm" /%} |
+| cautest | [cautest](../../development/sources.mdoc#xmake-addons:source:addons:c:cautest:xmake:lua) | xmake ctest | ctest.lua | {% page project="cautest" id="docs/index" label="Cautest" /%} |
+| x-pyocd | [x-pyocd](../../development/sources.mdoc#xmake-addons:source:addons:x:x-pyocd:xmake:lua) | xmake x-pyocd | 显式 --config=JSON | {% page project="x-pyocd" id="docs/index" label="x-pyocd" /%} |
+| x-console | [x-console](../../development/sources.mdoc#xmake-addons:source:addons:x:x-console:xmake:lua) | xmake x-console | 显式 --config=JSON | {% page project="x-console" id="docs/index" label="x-console" /%} |
+| x-firmware | [x-firmware](../../development/sources.mdoc#xmake-addons:source:addons:x:x-firmware:xmake:lua) | xmake x-firmware | 显式 --config=JSON | {% page project="x-firmware" id="docs/index" label="x-firmware" /%} |
+
+组合手册中的工具链接直接定位对应工程；独立构建只包含索引文档时，跨工程目标不加载，页面会提示目标未包含。独立阅读也可从 [GitHub 工具仓库](https://github.com/wmem)查找对应手册。
+
+{% /section %}

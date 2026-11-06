@@ -1,0 +1,14 @@
+{% section id="xmake-addons:use:quickstart" title="首次安装与版本锁定" %}
+
+需要支持 Addon 的 Xmake；先用 xmake addon --help 确认能力。在消费工程 xmake.lua 中声明索引和所需完整版本，例如：
+
+```lua {% process=false %}
+add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
+add_addons("xdtc 0.11.0", "xspm 0.3.0")
+```
+
+执行 xmake f -y 准备插件，检查并提交 xmake-addons.lock，以同时固定版本和索引提交。各插件的默认配置与命令见[Addon 参考](reference/addons.mdoc)，实际业务用法进入对应工具手册。
+
+升级时修改工程版本声明，再使用 Xmake 的 Addon 更新流程，检查锁文件变化及消费工程回归。工程任务导入的固定 API 与通用全局 CLI 的版本选择边界见[完整安装说明](install.mdoc)；不能仅修改工具源码就认定已安装命令更新。
+
+{% /section %}

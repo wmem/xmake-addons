@@ -1,0 +1,14 @@
+{% section id="xmake-addons:dev:contributing" title="维护配方与验证发布" %}
+
+先在工具仓库完成实现与验证，再选择已提交、可获取的源码提交，在对应 addons/ 配方中声明同号分发版本。保留旧版本配方，供既有锁文件复现。工具源码变更与索引配方变更是两个仓库中的独立变更。
+
+运行[集成验证入口](acceptance/releases.mdoc)检查真实隔离安装、资源完整性、命令/API/规则消费和错误传播。临时快照测试只覆盖工作副本，准备发布还需验证配方中实际固定的提交。证据放在 tests/ 的验证 JSON；正文记录环境、日期、范围与未覆盖项，避免将历史结果写成当前版本的完整验收。
+
+
+## 文档维护
+
+正式首页为 docs/index.mdoc；使用教程与完整参考放在 usage/，实现、设计和验收放在 development/。新增主题时更新对应层 index 的概览或 directory-order，不维护全局文章清单。稳定 section ID 用于长期引用，历史记录说明日期、版本和适用范围。
+
+从仓库根运行 edoc validate、edoc outline --depth 1 和 edoc，检查生成页面的目录、跳转及阅读顺序。生成的 output/ 与 .edoc-build/ 不作为手工维护源。
+
+{% /section %}

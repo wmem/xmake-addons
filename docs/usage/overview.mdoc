@@ -1,0 +1,39 @@
+{% section id="xmake-addons:use:overview" title="认识 xmake-addons" %}
+
+本仓库维护六个 Xmake Addon 的分发配方。工程用完整版本选择配方，配方固定工具源码提交，工具自己的脚本负责准备运行资源。
+
+{% relation-diagram id="xmake-addons:reading:distribution" /%}
+
+工程提交 xmake-addons.lock，同时固定插件版本和索引提交。工具实现与准备逻辑留在各自仓库，索引只记录来源、版本和固定提交。
+
+六个 Addon 的入口如下。源码包 cmlib、gd32f4xx 继续由 xspm 管理，不属于本索引。
+
+| Addon | 安装后命令 | 默认配置 |
+| --- | --- | --- |
+| xdtc | `xmake xdtc` | `xdtc.lua` |
+| xspm | `xmake xspm` | `xspm.json` |
+| cautest | `xmake ctest` | `ctest.lua` |
+| x-pyocd | `xmake x-pyocd` | 无，显式传入 `--config=<JSON>` |
+| x-console | `xmake x-console` | 无，显式传入 `--config=<JSON>` |
+| x-firmware | `xmake x-firmware` | 无，显式传入 `--config=<JSON>` |
+
+六个命令均支持 `--config=<路径>`。xdtc 默认从启动目录查找配置，显式 `-P` 时使用所选工程；xspm、ctest 按消费工程根目录定位。x-pyocd/x-console 不解析板描述，执行系统、速率、芯片、端口及运行命令等所需参数由 config 提供。
+
+x-firmware 的文件路径相对 JSON 所在目录，提供 app/upgrade/diff/inspect/product 操作。安装目录不参与应用路径解析。cautest 的配置仍使用 `ctest.*` API。
+
+当前 cautest 为 **0.8.0**、xdtc 为 **0.11.0**、x-pyocd 为 **0.3.1**、x-console 为 **0.2.0**、x-firmware 为 **0.2.0**。
+
+xdtc 数据接口统一使用 `xdtc_` 前缀，不再提供裸名或 `updateRoot` 别名。Addon 与工具源码发布版本相同，历史配方继续保留，验证记录见[集成验证与发布记录](../development/acceptance/releases.mdoc)。
+
+
+固定版本的使用范围见 [远端安装与版本选择验证](../development/sources.mdoc#xmake-addons:source:tests:validation-fixed-device-versions-20261101:json)：全新缓存从远端安装通过；全局激活其它版本时，工程任务导入的API仍遵守工程声明/锁文件。通用全局CLI按全局active版本执行，不读取工程锁；消费工程需要在项目任务内调用固定API。
+
+KY3133 MCU的已有JSON操作使用工程 `xmake pyocd`，正常烧录/串口仍使用工程 `xmake flash`／`xmake console`。
+
+## 最近版本与兼容记录
+
+2026-11-01 新增固定版本：x-pyocd `0.3.1` 支持J-Link／DAP显式选择、实际Session连接前的探针固件升级保护和擦写选项记录；x-console `0.2.0` 提供Linux可选保留串口raw配置。
+
+工具源码和对应版本标签已推送，配方固定源码提交，不跟随main或latest。消费工程必须声明完整版本并提交xmake-addons.lock，以固定版本与索引提交；旧配方与[历史验证范围](../development/acceptance/releases.mdoc)保留。
+
+{% /section %}

@@ -1,0 +1,151 @@
+{
+  "objects": [
+    {
+      "id": "xmake-addons:reading:distribution:declare",
+      "kind": "node",
+      "label": "工程声明完整版本",
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    },
+    {
+      "id": "xmake-addons:reading:distribution:recipe",
+      "kind": "node",
+      "label": "索引配方固定源码提交",
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    },
+    {
+      "id": "xmake-addons:reading:distribution:prepare",
+      "kind": "node",
+      "label": "工具脚本准备 Addon",
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    },
+    {
+      "id": "xmake-addons:reading:distribution:consume",
+      "kind": "node",
+      "label": "工程命令 / API / 规则",
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "xmake-addons:reading:distribution:edge:lookup",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "查找对应版本",
+      "endpoints": [
+        "xmake-addons:reading:distribution:declare",
+        "xmake-addons:reading:distribution:recipe"
+      ],
+      "direction": {
+        "sources": [
+          "xmake-addons:reading:distribution:declare"
+        ],
+        "targets": [
+          "xmake-addons:reading:distribution:recipe"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    },
+    {
+      "id": "xmake-addons:reading:distribution:edge:prepare",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "检出固定提交",
+      "endpoints": [
+        "xmake-addons:reading:distribution:recipe",
+        "xmake-addons:reading:distribution:prepare"
+      ],
+      "direction": {
+        "sources": [
+          "xmake-addons:reading:distribution:recipe"
+        ],
+        "targets": [
+          "xmake-addons:reading:distribution:prepare"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    },
+    {
+      "id": "xmake-addons:reading:distribution:edge:install",
+      "kind": "connection",
+      "class": "执行顺序",
+      "label": "安装运行资源",
+      "endpoints": [
+        "xmake-addons:reading:distribution:prepare",
+        "xmake-addons:reading:distribution:consume"
+      ],
+      "direction": {
+        "sources": [
+          "xmake-addons:reading:distribution:prepare"
+        ],
+        "targets": [
+          "xmake-addons:reading:distribution:consume"
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    }
+  ],
+  "views": [
+    {
+      "id": "xmake-addons:reading:distribution",
+      "kind": "architecture",
+      "label": "版本声明如何定位工具源码",
+      "include": {
+        "objects": [
+          "xmake-addons:reading:distribution:declare",
+          "xmake-addons:reading:distribution:recipe",
+          "xmake-addons:reading:distribution:prepare",
+          "xmake-addons:reading:distribution:consume"
+        ],
+        "relations": [
+          "xmake-addons:reading:distribution:edge:lookup",
+          "xmake-addons:reading:distribution:edge:prepare",
+          "xmake-addons:reading:distribution:edge:install"
+        ]
+      },
+      "layout": {
+        "direction": "TB",
+        "routing": "orthogonal",
+        "constraints": [
+          {
+            "type": "order",
+            "axis": "y",
+            "nodes": [
+              "xmake-addons:reading:distribution:declare",
+              "xmake-addons:reading:distribution:recipe",
+              "xmake-addons:reading:distribution:prepare",
+              "xmake-addons:reading:distribution:consume"
+            ],
+            "gap": 36
+          },
+          {
+            "type": "align",
+            "axis": "x",
+            "nodes": [
+              "xmake-addons:reading:distribution:declare",
+              "xmake-addons:reading:distribution:recipe",
+              "xmake-addons:reading:distribution:prepare",
+              "xmake-addons:reading:distribution:consume"
+            ]
+          }
+        ]
+      },
+      "source": {
+        "file": "docs/usage/overview.mdoc"
+      }
+    }
+  ]
+}

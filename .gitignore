@@ -1,2 +1,6 @@
 __pycache__/
 .results/
+
+# edoc 生成产物
+/output/
+/.edoc-build/

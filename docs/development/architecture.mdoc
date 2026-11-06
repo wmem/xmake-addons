@@ -1,0 +1,7 @@
+{% section id="xmake-addons:dev:architecture" title="架构与边界" %}
+
+addons/ 中的配方保存来源、分发版本和固定源码提交，调用工具仓库自己的 scripts/prepare-addon.lua 准备载荷。工具的运行实现和安装资源清单由各自仓库维护，索引不复制业务实现。
+
+[tests/test_addons.py](sources.mdoc#xmake-addons:source:tests:test_addons:py) 与 [tests/test_device_addons.py](sources.mdoc#xmake-addons:source:tests:test_device_addons:py) 在独立缓存及 XMAKE_GLOBALDIR 中验证真实安装和消费。临时源码快照、配方固定提交安装、远端安装和实板验证具有不同范围；结论必须随具体证据说明，不能互相替代。
+
+{% /section %}

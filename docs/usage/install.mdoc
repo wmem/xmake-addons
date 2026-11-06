@@ -1,0 +1,64 @@
+{% section id="xmake-addons:use:install" title="安装、版本锁定与开发接入" %}
+
+{% section id="xmake-addons:use:install:installation" title="安装与开发" %}
+
+x-firmware **0.1.0** 的文件 API、共享固件/产品头和纯 Lua LZ4/bsdiff 不依赖算法二进制。源码验证包括 C/Lua 格式互通、26 组独立 C 算法双向互通，以及真实隔离安装、API/规则/命令和增量处理；本索引配方的固定源码安装也已通过同一消费工程。详细接口和测试入口见 [x-firmware README](https://github.com/wmem/x-firmware)，固定源提交由 [配方](../development/sources.mdoc#xmake-addons:source:addons:x:x-firmware:xmake:lua)维护。
+
+需要支持 Addon 的 Xmake；当前验证环境为 Linux x86_64、Xmake `3.1.1+HEAD.3ba37a0`。不能仅凭 `3.1.1` 版本号判断其他构建是否支持 Addon，应检查 `xmake addon --help`。
+
+cautest 安装还需要已有 Node >=20.6 和 npm，以及 npm lock 对应依赖的缓存或网络；配方不会安装系统 Node、npm 或全局 TypeScript。
+
+消费工程可直接声明插件，配置与构建时由 Xmake 安装，无需项目初始化任务：
+
+```lua {% process=false %}
+add_repositories("kunyi git@github.com:wmem/xmake-addons.git")
+add_addons("xdtc 0.11.0", "x-pyocd 0.3.1", "x-console 0.2.0",
+    "xspm 0.3.0", "cautest 0.8.0")
+add_addons("x-firmware 0.2.0")
+```
+
+插件声明使用明确的完整版本，工程提交 `xmake-addons.lock` 同时固定版本和索引提交。升级 xdtc 0.11.0 时，须同步更新数据脚本和所引用组件中的 DSL 调用；旧裸名不再有效。旧配方保留供历史锁文件复现。
+
+x-pyocd 与 x-console 分别提供可导入的 `@addon.x-pyocd.api` 与 `@addon.x-console.api`。
+
+xdtc 0.11.0 的 action 可声明 `{entry, select}`，直接调用这两个模块，无需工程转发脚本；已有 `{script, select}` 继续支持，两种入口互斥。配置读取接口只读取输入，不调用 entry。
+
+完整参数与平台依赖见 [x-pyocd README](https://github.com/wmem/x-pyocd)、[x-console README](https://github.com/wmem/x-console)；action 接口见 {% page project="xdtc" id="docs/usage/reference/commands" anchor="action-输入" label="xdtc action 参考" /%}。
+
+首次远程分发需要先推送工具实现提交及索引。对已经固定有效源码提交的配方，可注册本地索引，并用 `XMAKE_ADDON_SOURCE_ROOT` 指定包含工具 Git 仓库的目录：
+
+```sh {% process=false %}
+xmake repo --add --global kunyi /path/to/xmake-addons-repo
+XMAKE_ADDON_SOURCE_ROOT=/path/to/code/xmake \
+  xmake addon --install kunyi@xdtc kunyi@x-pyocd kunyi@x-console kunyi@xspm kunyi@cautest
+```
+
+本地来源同样按配方固定提交检出，未提交修改不会参与安装；可以直接从工作副本运行准备脚本来验证未提交修改。
+
+远程索引发布后，省略 `XMAKE_ADDON_SOURCE_ROOT`，并将本地索引路径替换为 `https://github.com/wmem/xmake-addons.git`。
+
+安装通过 Xmake 索引完成；cautest 的配方执行 `npm ci --ignore-scripts`、`npm run build`，只安装生成的 JS 和必要资源，日常测试不重新编译 TS。
+
+开发阶段直接从工具原始目录或 Git URL 安装不会执行配方，应先运行各工具的 `scripts/prepare-addon.lua` 准备完整目录。
+
+上面的索引安装命令需要所选版本已经有有效提交号。验证工作副本时，可在各自仓库根目录准备为完整 Addon，再安装到开发专用环境，例如：
+
+```sh {% process=false %}
+# 在 x-pyocd 仓库根目录执行；输出目录须尚不存在。
+xmake lua scripts/prepare-addon.lua /tmp/x-pyocd-addon-stage
+xmake addon --install /tmp/x-pyocd-addon-stage
+```
+
+x-console 与 xdtc 使用相同准备流程。隔离验证应使用临时 `XMAKE_GLOBALDIR`，避免覆盖工程当前已安装的插件。插件安装不会自动安装 Python、pyOCD、Node.js 或 PowerShell。
+
+Addon 版本与工具源码发布版本统一：当前 xdtc 为 `0.11.0`、xspm 为 `0.3.0`、cautest 为 `0.8.0`、x-pyocd 为 `0.3.1`、x-console 为 `0.2.0`。
+
+每个配方的 `add_versions()` 固定对应源码发布提交，不跟随浮动分支；Cautest 的 C API 版本仍独立维护。发布新版时先完成工具验证、提交和标签，再发布同号配方。仅文档修改不改变运行时版本。
+
+此前采用独立的 Addon 版本号，旧配方保留供历史锁文件复现。迁移时修改 `add_addons()` 为上面的明确版本，再在消费工程执行 `xmake addon --upgrade -y`，提交更新后的 `xmake-addons.lock`。
+
+`xmake addon --list` 可查看全局活动版本；安装新版本后应确认 `xmake ctest --help` 默认配置为 `ctest.lua`，避免继续使用此前撤回的 `0.1.5` 入口。
+
+{% /section %}
+
+{% /section %}
