@@ -32,28 +32,32 @@ class AddonTests(unittest.TestCase):
         repo = cls.base / "repo"
         for tool in COMMANDS:
             root = TOOLS / tool
-            files = subprocess.check_output(
-                ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"], cwd=root
-            ).decode().split("\0")
             source = cls.base / "sources" / tool
-            source.mkdir(parents=True)
-            for name in sorted(set(files)):
-                if name and (root / name).is_file() and Path(name).parts[0] != "build" and not any(
-                    part in {".git", ".xmake", "dist", "node_modules"}
-                    for part in Path(name).parts
-                ):
-                    target = source / name
-                    target.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(root / name, target)
-            cls.exec(["git", "init", "-q", "-b", "main"], cwd=source)
-            cls.exec(["git", "add", "."], cwd=source)
-            cls.exec(["git", "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid",
-                      "commit", "-qm", "plugin snapshot"], cwd=source)
-            commit = cls.exec(["git", "rev-parse", "HEAD"], cwd=source).stdout.strip()
             recipe = INDEX / "addons" / tool[0] / tool / "xmake.lua"
             text = recipe.read_text()
-            text = re.sub(r'add_versions\("(0\.[0-9]+\.[0-9]+)", "[^"\n]+"\)',
-                          lambda m: f'add_versions("{m[1]}", "{commit}")', text)
+            if os.environ.get("ADDON_FIXED_SOURCES") == "1":
+                # 按原始配方检出已提交源码，不替换待发布的固定提交号。
+                cls.exec(["git", "clone", "-q", str(root), str(source)])
+            else:
+                files = subprocess.check_output(
+                    ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"], cwd=root
+                ).decode().split("\0")
+                source.mkdir(parents=True)
+                for name in sorted(set(files)):
+                    if name and (root / name).is_file() and Path(name).parts[0] != "build" and not any(
+                        part in {".git", ".xmake", "dist", "node_modules"}
+                        for part in Path(name).parts
+                    ):
+                        target = source / name
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(root / name, target)
+                cls.exec(["git", "init", "-q", "-b", "main"], cwd=source)
+                cls.exec(["git", "add", "."], cwd=source)
+                cls.exec(["git", "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid",
+                          "commit", "-qm", "plugin snapshot"], cwd=source)
+                commit = cls.exec(["git", "rev-parse", "HEAD"], cwd=source).stdout.strip()
+                text = re.sub(r'add_versions\("(0\.[0-9]+\.[0-9]+)", "[^"\n]+"\)',
+                              lambda m: f'add_versions("{m[1]}", "{commit}")', text)
             dest = repo / "addons" / tool[0] / tool / "xmake.lua"
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_text(text)
@@ -65,7 +69,7 @@ class AddonTests(unittest.TestCase):
         cls.exec(["xmake", "addon", "--install", "-y",
                   "fixture@xdtc", "fixture@xspm", "fixture@cautest"], timeout=120)
         for tool, command in COMMANDS.items():
-            version = {"xdtc": "0.11.0", "cautest": "0.8.0", "xspm": "0.3.0"}[tool]
+            version = {"xdtc": "0.11.0", "cautest": "0.9.0", "xspm": "0.3.0"}[tool]
             runtime = cls.base / "global/.xmake/addons" / tool / version / "plugins" / command / "runtime"
             assert runtime.is_dir(), runtime
             assert not (runtime / "node_modules").exists()
@@ -444,6 +448,56 @@ ctest.native {id="unit.addon",target="test.addon"}
         self.assertEqual(report["status"], "SUCCESS")
         self.assertEqual(report["jobs"][0]["groups"][0]["cases"][0]["status"], "PASS")
 
+    def test_046_ctest_source_descriptions_and_reports(self):
+        project = self.base / "ctest descriptions"
+        project.mkdir()
+        (project / "xmake.lua").write_text('target("product")\n    set_kind("phony")\n')
+        self.write_ctest(project / "ctest.lua")
+        source = project / "test.c"
+        source.write_text(source.read_text()
+                          .replace("CAUTEST_CASE(", "/**\n * @purpose 验证登记的测试说明\n * @expected 返回 42\n */\nCAUTEST_CASE(", 1)
+                          .replace("CAUTEST_SUITE(", "/** @purpose 验证说明提取 */\nCAUTEST_SUITE(", 1))
+        config = project / "ctest.lua"
+        config.write_text(config.read_text().replace('id="unit.addon",', 'id="unit.addon",description="Native 说明验证",'))
+        summary = json.loads(self.exec(["xmake", "ctest", "--json", "--reporter=html,junit,json"], cwd=project).stdout)
+        result = Path(summary["resultPath"])
+        job = json.loads(result.read_text())["jobs"][0]
+        self.assertEqual(job["description"], "Native 说明验证")
+        self.assertEqual(job["groups"][0]["description"], "验证说明提取")
+        case = job["groups"][0]["cases"][0]
+        self.assertEqual(case["description"], "验证登记的测试说明")
+        self.assertEqual(case["expectedBehavior"], "返回 42")
+        self.assertIn("验证登记的测试说明", (result.parent / "report.html").read_text())
+        self.assertIn("expectedBehavior", (result.parent / "junit.xml").read_text())
+
+    def test_047_ctest_generic_job_without_cases(self):
+        project = self.base / "generic job 中文"
+        project.mkdir()
+        (project / "xmake.lua").write_text('target("product")\n    set_kind("phony")\n')
+        (project / "generic.mjs").write_text('''import {defineStep} from '@cautest/config';
+export function create({options}) {
+  return [defineStep({kind:'generic',name:'prepare',phase:'prepare',execute(){}}),
+    defineStep({kind:'generic',name:'run',phase:'run',execute(){if(options.fail)throw new Error('generic task failure');}})];
+}
+''')
+        (project / "ctest.lua").write_text('''ctest.workflow {id="task.ok",policy={resultMode="steps"},provider={module="generic.mjs",export="create"},options={}}
+ctest.workflow {id="task.error",policy={resultMode="steps"},provider={module="generic.mjs",export="create"},options={fail=true}}
+''')
+        for job_id, expected, status in [("task.ok", 0, "SUCCESS"), ("task.error", 2, "ERROR")]:
+            summary = json.loads(self.exec(["xmake", "ctest", "--json", "--reporter=html,junit,json", job_id],
+                                           cwd=project, expected=expected).stdout)
+            result = Path(summary["resultPath"])
+            report = json.loads(result.read_text())
+            self.assertEqual(report["status"], status)
+            self.assertEqual(report["jobs"][0]["resultMode"], "steps")
+            self.assertEqual(report["jobs"][0]["groups"], [])
+            self.assertEqual(len(report["jobs"][0]["steps"]), 2)
+            self.assertIn('workflowStep', (result.parent / "junit.xml").read_text())
+            self.assertNotIn('Cases 0', (result.parent / "report.html").read_text())
+        output = self.exec(["xmake", "ctest", "task.ok"], cwd=project).stdout
+        self.assertIn("步骤", output)
+        self.assertNotIn("用例", output)
+
     def test_045_public_mcu_rule_builds_without_ctest_command(self):
         consumer = self.base / "mcu consumer"
         consumer.mkdir()
@@ -628,5 +682,6 @@ if __name__ == "__main__":
             "status": "PASS" if result.wasSuccessful() else "FAIL",
             "tests": result.testsRun, "failures": len(result.failures),
             "errors": len(result.errors), "skipped": len(result.skipped),
+            "sourceMode": "fixed" if os.environ.get("ADDON_FIXED_SOURCES") == "1" else "snapshot",
         }, indent=2) + "\n")
     raise SystemExit(0 if result.wasSuccessful() else 1)

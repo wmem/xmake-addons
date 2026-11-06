@@ -11,6 +11,7 @@ add_versions("0.1.3", "6f2fdaa16d8f2ca04675ea52d4ccfa14c6a3f5a3")
 add_versions("0.1.4", "c2e57828dddc760226ed2756005df6d30432722a")
 add_versions("0.6.1", "c2e57828dddc760226ed2756005df6d30432722a")
 add_versions("0.8.0", "a92401bc97d07080d6787bf97376c1c8d0bd21af")
+add_versions("0.9.0", "b9cce34100f903c82ea5b0356e5ae350846870b2")
 on_load(function(package)
 	-- 本地开发仍按配方的提交号检出，不消费未提交修改。
 	local root = os.getenv("XMAKE_ADDON_SOURCE_ROOT")
